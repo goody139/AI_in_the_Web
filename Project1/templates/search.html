@@ -1,0 +1,23 @@
+<html>
+<header>
+    <title>{{ title }}</title>
+</header>
+
+<body>
+    <h1>Search results for {{ search_term }}</h1>
+    <form action='search' method='GET'>
+        <input type='text' name='q', value='{{ search_term }}'>
+        <input type="submit">
+    </form>
+
+    <url>
+        {% for url,title,highlight in result %}
+            <li> <a href="{{ url }}">{{ title }}</a> 
+                {{ highlight|safe }}
+            </li>
+        {% endfor %}
+    </url>
+
+</body>
+
+</html>
