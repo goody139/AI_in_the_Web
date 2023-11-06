@@ -1,9 +1,9 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, url_for
 from whoosh import index
 ix = index.open_dir("index")
 
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates", static_folder="static")
 
 @app.route("/")
 def start():

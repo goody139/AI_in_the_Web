@@ -1,23 +1,27 @@
 <html>
-<header>
-    <title>{{ title }}</title>
-</header>
+    <head>
+        <title>{{ title }}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1 , viewport-fit=auto"/>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
 
-<body>
-    <h1>Search results for {{ search_term }}</h1>
-    <form action='search' method='GET'>
-        <input type='text' name='q', value='{{ search_term }}'>
-        <input type="submit">
-    </form>
+    <body>
+        <h1>Search results for {{ search_term }}</h1>
+        <form action='search' method='GET'>
+            <input type='text' name='q', value='{{ search_term }}'>
+            <input type="submit", value='Search'>
+        </form>
 
-    <url>
-        {% for url,title,highlight in result %}
-            <li> <a href="{{ url }}">{{ title }}</a> 
-                {{ highlight|safe }}
-            </li>
-        {% endfor %}
-    </url>
+        <url>
+            <ul>
+            {% for url,title,highlight in result %}
+                <li> <h3><a href="{{ url }}">{{ title }}</a></h3>
+                    {{ highlight|safe }}
+                </li>
+            {% endfor %}
+            </ul>
+        </url>
 
-</body>
+    </body>
 
 </html>
