@@ -1,16 +1,18 @@
 <html>
-<header>
-    <title>{{ title }}</title>
-</header>
+    <head>
+        <title>{{ title }}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1 , viewport-fit=auto">
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
 
-<body>
-    <h1>Enter a search term below</h1>
+    <body>
+        <h1>Enter a search term below</h1>
 
-    <form action='search' method='GET'>
-        <input type='text' name='q'>
-        <input type="submit">
-    </form>
+        <form action='search' method='GET'>
+            <input type='text' name='q'>
+            <input type="submit", value='Search'>
+        </form>
 
-</body>
+    </body>
 
 </html>
