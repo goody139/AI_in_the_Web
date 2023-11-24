@@ -6,13 +6,7 @@
     </head>
 
     <body>
-        <h1>Unicorn Search</h1>
-        <h2>Enter a search term below</h2>
-
-        <form action='search' method='GET'>
-            <input type='text' name='q'>
-            <input type="submit", value='Search'>
-        </form>
+        {{ error_cause }}, go back to the <a href="{{ url_for('start') }}">home page</a>
 
     </body>
 
