@@ -2,7 +2,6 @@ from flask import Flask, request, render_template, url_for
 from whoosh import index
 from whoosh.qparser import QueryParser
 import traceback
-from crawler import crawl
 
 ix = index.open_dir("index")
 
