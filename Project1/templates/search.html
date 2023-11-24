@@ -2,16 +2,19 @@
     <head>
         <title>{{ title }}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1 , viewport-fit=auto"/>
-        <link rel="stylesheet" href="/static/style.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     </head>
 
     <body>
-        <h1>Search results for {{ search_term }}</h1>
+        <h1>Unicorn Search</h1>
+        <h2>Search results for {{ search_term }}</h2>
         <form action='search' method='GET'>
             <input type='text' name='q', value='{{ search_term }}'>
             <input type="submit", value='Search'>
         </form>
-
+        {% if suggestion %}
+            <h4>Did you mean <a href="search?q={{ suggestion }}">{{ suggestion }}?</a></h4>
+        {% endif %}
         <url>
             <ul>
             {% for url,title,highlight in result %}
