@@ -1,0 +1,30 @@
+<html>
+    <head>
+        <title>{{ title }}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1 , viewport-fit=auto"/>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+
+    <body>
+        <h1>Unicorn Search</h1>
+        <h2>Search results for {{ search_term }}</h2>
+        <form action='search' method='GET'>
+            <input  id="search_bar" type='text' name='q', value='{{ search_term }}'>
+            <input id="image" type="image" src="{{ url_for('static', filename='magic-wand.png') }}" alt="Submit" style="float:right" width="18"/>
+        </form>
+        {% if suggestion %}
+            <h4>Did you mean <a href="search?q={{ suggestion }}">{{ suggestion }}?</a></h4>
+        {% endif %}
+        <url>
+            <ul>
+            {% for url,title,highlight in result %}
+                <li> <h3><a href="{{ url }}">{{ title }}</a></h3>
+                    {{ highlight|safe }}
+                </li>
+            {% endfor %}
+            </ul>
+        </url>
+
+    </body>
+
+</html>

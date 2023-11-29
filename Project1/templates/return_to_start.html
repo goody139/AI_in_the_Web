@@ -1,0 +1,13 @@
+<html>
+    <head>
+        <title>{{ title }}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1 , viewport-fit=auto">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+
+    <body>
+        {{ error_cause }}, go back to the <a href="{{ url_for('start') }}">home page</a>
+
+    </body>
+
+</html>

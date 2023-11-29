@@ -1,0 +1,19 @@
+<html>
+    <head>
+        <title>{{ title }}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1 , viewport-fit=auto">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+
+    <body>
+        <h1>Unicorn Search</h1>
+        <img id="unicorn" src="{{ url_for('static', filename='unicorn.png') }}" alt="SearchUnicorn" width="400" height="300" class="center">
+
+        <form action='search' method='GET'>
+            <input id="search_bar" type='text' name='q'>
+            <input id="image" type="image" src="{{ url_for('static', filename='magic-wand.png') }}" alt="Submit" style="float:right" width="18"/>
+        </form>
+
+    </body>
+
+</html>
