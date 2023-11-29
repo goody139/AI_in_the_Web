@@ -9,8 +9,8 @@
         <h1>Unicorn Search</h1>
         <h2>Search results for {{ search_term }}</h2>
         <form action='search' method='GET'>
-            <input type='text' name='q', value='{{ search_term }}'>
-            <input id="image" type="image" src="{{ url_for('static', filename='magic-wand.png') }}" alt="Submit" width="18"/>
+            <input  id="search_bar" type='text' name='q', value='{{ search_term }}'>
+            <input id="image" type="image" src="{{ url_for('static', filename='magic-wand.png') }}" alt="Submit" style="float:right" width="18"/>
         </form>
         {% if suggestion %}
             <h4>Did you mean <a href="search?q={{ suggestion }}">{{ suggestion }}?</a></h4>

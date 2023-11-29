@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unicorn search </title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <style>
+
+h1 {
+ color: rgb(226,196,224);
+}
+
+body {
+  background-color: rgb(30,73,107);
+  margin: 200px 40%;
+}
+
+form {
+  background-color: #d1deff;
+  width: 400px;
+  height: 44px;
+  border-radius: 5px;
+  align-items:center;
+}
+
+input {
+  all: unset;
+  font: 16px system-ui;
+  height: 100%;
+  width: 100%;
+  padding: 6px 10px;
+  color: #ff91d7;
+  
+}
+
+::placeholder {
+  color: #fff;
+  opacity: 0.7; 
+}
+
+svg {
+  color: #fff;
+  fill: currentColor;
+  width: 24px;
+  height: 24px;
+  padding: 10px;
+}
+
+button {
+  all: unset;
+  cursor: pointer;
+  width: 44px;
+  height: 44px;
+}
+    </style>
+
+
+</head>
+
+<body>
+
+<h1><b> Unicorn search </b></h1>
+<img id="unicorn" src="/static/unicorn.png" alt="SearchUnicorn" width="400" height="300" position=inherit>
+
+
+    <form action="search" method="GET">
+        <input type="text" name="q" required>
+        <input id="image" type="image" src="{{ url_for('static', filename='magic-wand.png') }}" alt="Submit" style="float:right" width="18"/>
+    </form>
+
+</body>
+</html>
