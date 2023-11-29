@@ -33,3 +33,8 @@ a {
 li {
     background: #f4fffd;
 }
+
+#image {
+    object-position: center bottom;
+    object-fit: contain;
+}

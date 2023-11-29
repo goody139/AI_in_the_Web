@@ -38,5 +38,9 @@ def search():
         return render_template("search.html", title=search_term, search_term=search_term, result=result_list, suggestion=suggestion)
     
 @app.errorhandler(500)
+@app.errorhandler(500)
+@app.errorhandler(500)
+@app.errorhandler(500)
+@app.errorhandler(500)
 def internal_error(exception):
-   return "<pre>"+traceback.format_exc()+"</pre>"
+   return render_template("server_error.html", title='Server error')
