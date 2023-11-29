@@ -10,7 +10,7 @@
         <h2>Search results for {{ search_term }}</h2>
         <form action='search' method='GET'>
             <input type='text' name='q', value='{{ search_term }}'>
-            <input type="submit", value='Search'>
+            <input id="image" type="image" src="{{ url_for('static', filename='magic-wand.png') }}" alt="Submit" width="18"/>
         </form>
         {% if suggestion %}
             <h4>Did you mean <a href="search?q={{ suggestion }}">{{ suggestion }}?</a></h4>

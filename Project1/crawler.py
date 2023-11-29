@@ -4,8 +4,6 @@ from urllib.parse import urlparse, urlsplit, urljoin
 from whoosh.index import create_in
 from whoosh.fields import *
 from whoosh.analysis import StemmingAnalyzer
-import logging
-import time
 
 
 def crawl(start_urls: list, stay_on_server=True):
