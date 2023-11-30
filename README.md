@@ -4,7 +4,7 @@ University Osnabrück
 Winter term 2023 
 
 ## Project 1: Build a search engine 
-This repository is meant to provide our solution for project 1. This README file contains information about the functionalities we have implemented. 
+This repository is meant to provide our solution for project 1. 
 
 
 ### Authors 
