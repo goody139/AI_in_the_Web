@@ -1,12 +1,49 @@
+#-------------------------- IMPORT ---------------------------------#
 from bs4 import BeautifulSoup
 import requests
 from urllib.parse import urlparse, urlsplit, urljoin
 from whoosh.index import create_in
 from whoosh.fields import *
 from whoosh.analysis import StemmingAnalyzer
+#-------------------------------------------------------------------#
 
+"""
+Web Crawler Script
+
+Author: Hannah Köster & Lisa Golla
+University Course: AI in the Web
+Date: 1.12.2023
+
+Description:
+This Python script serves as a web crawler designed for extracting information, crawling through a list of 
+websites and updating the index. The code is part of the coursework for the AI in the Web course by Tobias 
+Thelen at the university Osnabrück.
+
+Usage:
+This script is run in the unicorn_search.py.
+
+Dependencies:
+Can be found in the requirements.txt file of the github repository : https://github.com/goody139/AI_in_the_Web
+
+Note:
+This crawler is based on the following pseudo code.
+Initialize stack with start URL
+While stack is not empty: 
+    Pop first URL 
+    If not visited recently: 
+        Get the content Analyse it and updates the index 
+        Analyse it, find links to other websites and add links to stack (push)
+        Update visited lst
+"""
 
 def crawl(start_urls: list, stay_on_server=True):
+    """ Crawls through given list of start URLS and updates the index.
+    @type start_urls: list
+    @param start_urls: the list of urls the crawler starts with
+    @type stay_on_server: bool
+    @param stay_on_server: If True, stays on one server
+    """
+    
     # define the structure of the index entries
     stem_ana = StemmingAnalyzer()
     schema = Schema(title=TEXT(analyzer=stem_ana, stored=True), content=TEXT(analyzer=stem_ana, stored=True, spelling=True), url=TEXT(stored=True))
