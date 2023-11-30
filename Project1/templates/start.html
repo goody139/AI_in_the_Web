@@ -23,7 +23,7 @@
     addEventListener("submit", function(event) {
         event.preventDefault(); 
 
-        var music = new Audio('/static/twinkle.mp3');
+        var music = new Audio("{{ url_for('static', filename='twinkle.mp3') }}");
         music.play();
 
         setTimeout(function() {
