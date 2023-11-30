@@ -1,30 +1,125 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
     <head>
         <title>{{ title }}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1 , viewport-fit=auto"/>
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    </head>
+        <style>
 
+            h1,
+            h2,
+            strong {
+            color: #F4A4FF;
+            }
+
+            #search_bar {
+                all: unset;
+                background-color: #FEF2FD;
+                width: 400px;
+                height: 44px;
+                border-radius: 5px;
+                border-width: 0;
+                align-items: left;
+                color: #555;
+                width: 90%;
+            }
+
+
+
+            button {
+                all: unset;
+                cursor: pointer;
+                width: 44px;
+                height: 44px;
+            }
+
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                background-color: #fff;
+                padding: 20px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                border-radius: 5px;
+            }
+
+            .result {
+                border-bottom: 1px solid #ddd;
+                padding: 15px 0;
+                margin-bottom: 20px;
+            }
+
+            .result h3 {
+                margin-bottom: 5px;
+                color: #0066cc;
+            }
+
+            .result p {
+                color: #555;
+                margin-bottom: 10px;
+                background-color: #fff5f6
+            }
+
+            .result a {
+                color: #F4A4FF;
+                text-decoration: none;
+            }
+
+            .result a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
     <body>
-        <h1>Unicorn Search</h1>
-        <h2>Search results for {{ search_term }}</h2>
-        <form action='search' method='GET'>
-            <input  id="search_bar" type='text' name='q', value='{{ search_term }}'>
-            <input id="image" type="image" src="{{ url_for('static', filename='magic-wand.png') }}" alt="Submit" style="float:right" width="18"/>
-        </form>
-        {% if suggestion %}
-            <h4>Did you mean <a href="search?q={{ suggestion }}">{{ suggestion }}?</a></h4>
-        {% endif %}
-        <url>
-            <ul>
+
+        <div class="container">
+            <h1>Unicorn Search</h1>
+            <h2>Search results for {{ search_term }}</h2>
+            <form id="searchForm" action='search' method='GET'>
+                <input  id="search_bar" type='text' name='q', value='{{ search_term }}'>
+                <input id="image" type="image" src="{{ url_for('static', filename='magic-wand.png') }}" alt="Submit" style="float:right" width="18"/>
+            </form>
+            
             {% for url,title,highlight in result %}
-                <li> <h3><a href="{{ url }}">{{ title }}</a></h3>
-                    {{ highlight|safe }}
-                </li>
-            {% endfor %}
-            </ul>
-        </url>
+            <div class="result">
+                <h3><a class="swoosh" href="{{ url }}">{{ title }} </a></h3>
+                <p> {{ highlight|safe }} </p>
+            </div>
+            {% endfor %} 
+
+
+        </div>
 
     </body>
-
 </html>
+
+<script>
+
+    addEventListener("submit", function(event) {
+        event.preventDefault(); 
+
+        var music = new Audio("{{ url_for('static', filename='twinkle.mp3') }}");
+        music.play();
+
+        setTimeout(function() {
+            document.getElementById("searchForm").submit();
+        }, 900);
+  
+    });
+
+    var links = document.getElementsByClassName('swoosh'),
+    audio = new Audio("{{ url_for('static', filename='horse.mp3') }}"),
+    clickHandler = function(event) {
+        event.preventDefault();
+        audio.addEventListener('ended', function(){
+            window.location.href = event.target.href;
+        })
+        audio.play();
+    };
+
+    for (var i in links) {
+    links[i].addEventListener('click', clickHandler);
+    }
+  
+    
+  
+</script>

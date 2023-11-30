@@ -9,7 +9,7 @@
         <h1>Unicorn Search</h1>
         <img id="unicorn" src="{{ url_for('static', filename='unicorn.png') }}" alt="SearchUnicorn" width="400" height="300" class="center">
 
-        <form action='search' method='GET'>
+        <form id="searchForm" action='search' method='GET'>
             <input id="search_bar" type='text' name='q'>
             <input id="image" type="image" src="{{ url_for('static', filename='magic-wand.png') }}" alt="Submit" style="float:right" width="18"/>
         </form>
@@ -17,3 +17,19 @@
     </body>
 
 </html>
+
+<script>
+  
+    addEventListener("submit", function(event) {
+        event.preventDefault(); 
+
+        var music = new Audio('/static/twinkle.mp3');
+        music.play();
+
+        setTimeout(function() {
+            document.getElementById("searchForm").submit();
+        }, 900);
+  
+    });
+  
+</script>
