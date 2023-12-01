@@ -41,12 +41,14 @@ The given User Interface can be found opening this website :
   - "Did u mean?" function
   - Ranking search results with BM25F scoring
   - Providing Title and suitable description text of found URL
-  - Handling of expectional response
+  - Handling of expectional responses
   - Search button and Search bar
   - Sounds when entering specific events
 
 
 ### Preview 
-*Insert Images of Website*
+![website](https://github.com/goody139/AI_in_the_Web/assets/72889998/49ec4fc8-2da3-445e-9f52-c71c84cff2d0)
+
+![grafik](https://github.com/goody139/AI_in_the_Web/assets/72889998/f72422d1-cdcb-4191-b488-3f30ce086086)
 
 
