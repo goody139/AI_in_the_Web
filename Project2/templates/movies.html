@@ -1,0 +1,35 @@
+{% extends "flask_user_layout.html" %}
+{% block content %}
+<div class="container">
+    <h2>Movies</h2>
+
+    {% for m in movies %}
+        <div class="panel panel-default">
+            <div class="panel-heading"><b>{{ m.title }}</b></div>
+            <div class="panel-body">
+                <p>
+                    {% for g in m.genres %}
+                        <span class="label label-default">{{ g.genre }}</span>
+                    {% endfor %}
+                </p>
+            </div>
+              <div class="panel-footer">Rate:
+                <form action="/rate" method="post" style="display: inline;">
+                    <select name="rating" id="rating" class="card-link">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                    <input type="submit" value="Submit" class="card-link">
+                </form>
+                  Stars
+              </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+
