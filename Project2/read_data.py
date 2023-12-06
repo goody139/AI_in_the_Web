@@ -1,11 +1,12 @@
 import csv
 from sqlalchemy.exc import IntegrityError
 from flask_sqlalchemy import SQLAlchemy
-from models import Movie, MovieGenre, Rating
+from models import Movie, MovieGenre, Rating, Tag, Link
 
 def check_and_read_data(db):
-    # check if we have movies in the database
-    # read data if database is empty
+
+
+    # MOVIES 
     if Movie.query.count() == 0:
         # read movies from csv
         with open('data/movies.csv', newline='', encoding='utf8') as csvfile:
@@ -31,7 +32,7 @@ def check_and_read_data(db):
                 if count % 100 == 0:
                     print(count, " movies read")
 
-
+    # RATINGS 
     if Rating.query.count() == 0:
         with open('data/ratings.csv', newline='', encoding='utf8') as csvfile:
             # my code
@@ -56,3 +57,50 @@ def check_and_read_data(db):
                 if count % 100 == 0:
                     print(count, " ratings read")
 
+
+    # TAGS 
+    if Tag.query.count() == 0:
+        with open('data/tags.csv', newline='', encoding='utf8') as csvfile:
+            # my code
+            reader = csv.reader(csvfile, delimiter=',')
+            count = 0
+            for row in reader:
+                if count > 0:
+                    try:
+                        userID = row[0]
+                        movieID = row[1]
+                        tag = row[2]
+                        tags = Tag(user_id=userID, movie_id=movieID, tag=tag)
+                        db.session.add(tags)
+                        db.session.commit()  # save data to database
+                    except IntegrityError:
+                        print("Ignoring duplicate movie: " + title)
+                        db.session.rollback()
+                        pass
+                count += 1
+                if count % 100 == 0:
+                    print(count, " tags read")   
+
+
+    # LINKS 
+    if Link.query.count() == 0:
+        with open('data/links.csv', newline='', encoding='utf8') as csvfile:
+            # my code
+            reader = csv.reader(csvfile, delimiter=',')
+            count = 0
+            for row in reader:
+                if count > 0:
+                    try:
+                        movieid = row[0]
+                        imdbid = row[1]
+                        tmdbid = row[2]
+                        links = Link(movieid=movieid, imdbid=imdbid, tmdbid=tmdbid)
+                        db.session.add(links)
+                        db.session.commit()  # save data to database
+                    except IntegrityError:
+                        print("Ignoring duplicate movie: " + title)
+                        db.session.rollback()
+                        pass
+                count += 1
+                if count % 100 == 0:
+                    print(count, "links read")   

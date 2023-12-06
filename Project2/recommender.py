@@ -6,16 +6,15 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 from flask_user import login_required, UserManager, UserMixin, current_user
 from read_data import check_and_read_data
-from models import db, User, Movie, MovieGenre, Rating
+from models import User, Movie, MovieGenre, Rating, Link, Tag, db
 
 
 # Running on http://127.0.0.1:5000/
 
 #------------------ TODO LIST ------------------#
 """ 
-- tags und links einfügen 
+- tags und links einfügen : irgendwas mit ausführungsreihenfolge
 - wie timestaps händeln?
-- csv einlesen und in sql einfügen (tags?)
 - wenn rating gerated worden ist farbe ändern oder so? Oder sterne system
 - README.html lesen 
 - wenn man Link für Film anklickt kommt man zur Seite (Kann man schon bild displayen auf unserer Website?)
@@ -47,14 +46,27 @@ app.config.from_object(__name__ + '.ConfigClass')
 app.app_context().push()
 
 # Initialize Flask-SQLAlchemy
-db = SQLAlchemy(app)
+#db = SQLAlchemy(app)
+#db.init_app(app)  # initialize database
+#db.create_all()  # create database if necessary
+
+#app.app_context().push()  # create an app context before initializing db
+db.init_app(app)  # initialize database
+db.create_all()  # create database if necessary
+user_manager = UserManager(app, db, User)  # initialize Flask-User management
 
 # Create all database tables
-db.create_all()
 check_and_read_data(db)
 
+@app.cli.command('initdb')
+def initdb_command():
+    global db
+    """Creates the database tables."""
+    check_and_read_data(db)
+    print('Initialized the database.')
+
 # Setup Flask-User and specify the User data-model
-user_manager = UserManager(app, db, User)
+#ger = UserManager(app, db, User)
 
 
 # The Home page is accessible to anyone

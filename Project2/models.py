@@ -40,3 +40,18 @@ class Rating(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'))
     rating_value = db.Column(db.Integer)
+
+class Tag(db.Model): 
+    __tablename__ = 'tags'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'))
+    tag = db.Column(db.Integer)
+
+class Link(db.Model): 
+    __tablename__ = 'links'
+    id = db.Column(db.Integer, primary_key=True)
+    movieid = db.Column(db.Integer)
+    imdbid = db.Column(db.Integer)
+    tmdbid= db.Column(db.Integer)
+
