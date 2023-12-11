@@ -52,6 +52,11 @@ class Link(db.Model):
     __tablename__ = 'links'
     id = db.Column(db.Integer, primary_key=True)
     movieid = db.Column(db.Integer)
-    imdbid = db.Column(db.Integer)
+    imdbid = db.Column(db.String(7), nullable=False, server_default='0000000')
     tmdbid= db.Column(db.Integer)
 
+class Image(db.Model): 
+    __tablename__ = 'images'
+    id = db.Column(db.Integer, primary_key=True)
+    movieid = db.Column(db.Integer)
+    link = db.Column(db.String(255), nullable=False, server_default='')

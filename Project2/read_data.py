@@ -1,7 +1,8 @@
 import csv
 from sqlalchemy.exc import IntegrityError
 from flask_sqlalchemy import SQLAlchemy
-from models import Movie, MovieGenre, Rating, Tag, Link
+from models import Movie, MovieGenre, Rating, Tag, Link, Image
+from helper_functions import get_movie_poster_links
 
 def check_and_read_data(db):
 
@@ -83,6 +84,8 @@ def check_and_read_data(db):
 
 
     # LINKS 
+    #Link.query.delete()
+    #db.session.commit()
     if Link.query.count() == 0:
         with open('data/links.csv', newline='', encoding='utf8') as csvfile:
             # my code
@@ -92,7 +95,7 @@ def check_and_read_data(db):
                 if count > 0:
                     try:
                         movieid = row[0]
-                        imdbid = row[1]
+                        imdbid = str(row[1])
                         tmdbid = row[2]
                         links = Link(movieid=movieid, imdbid=imdbid, tmdbid=tmdbid)
                         db.session.add(links)
@@ -104,3 +107,45 @@ def check_and_read_data(db):
                 count += 1
                 if count % 100 == 0:
                     print(count, "links read")   
+
+
+    # IMAGES
+    # alle movies in get poster function und dann jeden link für eine Movie ID 
+
+    #id movieid link
+
+    #Image.query.delete()
+    #db.session.commit()
+
+    if Image.query.count() == 5455:
+        print("Start")
+        count = 0
+        movies = Movie.query.all()
+        #print(movies.id)
+        #ml = {"movies": movies.id, "links": links}
+        # for dictionary item in dictionary 
+        handling_manually = []
+        for movie in movies: 
+            existing = Image.query.filter_by(movieid=movie.id).first()
+            if existing == None:
+                try:
+                    # von movie
+                    movieid = movie.id
+                    link = get_movie_poster_links(movie)
+                    if link == None: 
+                        handling_manually.append(movie.id)
+                        print("!!!!!!!!HANDLE MANUALLY!!!!!!!!!" + str(movie.id))
+                    #link = links[count]
+                    else: 
+                        images = Image(movieid=movieid, link=link)
+                        db.session.add(images)
+                        db.session.commit()  # save data to database
+                        #print("Commit")
+                except IntegrityError:
+                    print("Ignoring duplicate movie: " + title)
+                    db.session.rollback()
+                    pass
+            count += 1
+            if count % 100 == 0:
+                print(count, "movie poster links saved")   
+        print(handling_manually)
