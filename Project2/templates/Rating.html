@@ -3,8 +3,8 @@
 <div class="container">
     <h2>Movies</h2>
 
-    {% for m, mid, imid, tmbid, link, tag in results %}
-        <div class="panel panel-default">
+    {% for m, mid, imid, tmbid, link, tag, content in results %}
+        <div class="panel panel-default" >
             <div class="panel-heading"><b>{{ m.title }}</b>
                 <a href={{mid}} target="_blank">&nbsp;  &nbsp; &nbsp;  MOVIELENS  &nbsp; </a>
                 <a href={{imid}} target="_blank">  &nbsp; IMDB &nbsp;  </a>
@@ -14,13 +14,20 @@
             <div class="panel-body">
                 <p>
                     {% for g in m.genres %}
-                        <span class="label label-default">{{ g.genre }}</span>
+                        <span class="label label-default" style="background-color: yellowgreen;">{{ g.genre }}</span>
                     {% endfor %}  
-                    <img src={{link}} alt="Imagine a poster of the movie {{m.title}} would be here" width="150"> 
+
                     {% for t in tag %}
-                        <span class="label label-default">{{ t }}</span>
+                    <span class="label label-default" style="background-color: goldenrod;">{{ t }}</span>
                     {% endfor %}
                 </p>
+
+                <p>
+                    <img src={{link}} alt="Imagine a poster of the movie {{m.title}} would be here" width="150"> 
+                    
+                </p>
+
+                </p> {{content}} </p>
             </div>
 
             <div class="panel-footer">Rate:

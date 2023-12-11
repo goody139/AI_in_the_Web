@@ -117,7 +117,7 @@ def check_and_read_data(db):
     #Image.query.delete()
     #db.session.commit()
 
-    if Image.query.count() == 5455:
+    if Image.query.count() == 0:
         print("Start")
         count = 0
         movies = Movie.query.all()

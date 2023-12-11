@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
 from flask_user import login_required, UserManager, UserMixin, current_user
 from read_data import check_and_read_data
-from helper_functions import create_links, get_movie_poster_links, movie_poster, create_tags
+from helper_functions import create_links, get_movie_poster_links, movie_poster, create_tags, create_content
 from models import User, Movie, MovieGenre, Rating, Link, Tag, db
 
 
@@ -81,15 +81,9 @@ def movies_page():
 
     # bilder in html displayen für movie ID 
 
-
     user= current_user
     print(user.username)
     print(user.id)
-
-    # test Movieid 111 (IMDB link)
-    test = Link.query.filter(Link.movieid == 111).first()
-    print(test.imdbid)
-    print(type(test.imdbid))
 
     # all movies rated with 5.0 stars 
     ratings = Rating.query.filter(Rating.rating_value == 5)#.limit(10).all()
@@ -112,8 +106,9 @@ def movies_page():
     MOVIEID, IMDB, TMBID = create_links(movies) 
     poster_links = movie_poster(movies)
     tags = create_tags(movies) 
+    contents = create_content(movies) 
 
-    result_list = zip(movies, MOVIEID, IMDB, TMBID, poster_links, tags)
+    result_list = zip(movies, MOVIEID, IMDB, TMBID, poster_links, tags, contents)
 
     return render_template("rating.html", movies=movies, movieid=MOVIEID, imdb=IMDB, tmbid=TMBID, results=result_list)
 

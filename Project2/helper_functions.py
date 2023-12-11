@@ -30,6 +30,33 @@ def get_movie_poster_links(movie):
 
 
 # get content? from API? 
+def create_content(movies): 
+    dateipfad = 'API_key.txt'
+
+    # Versuche die Datei zu öffnen und ihren Inhalt zu lesen
+    with open(dateipfad, 'r') as datei:
+        inhalt = datei.read()
+        print(inhalt)
+
+    content = []
+    for movie in movies: 
+        links = Link.query.filter_by(movieid=movie.id).first()
+        #print(links.tmdbid)
+        url = "https://api.themoviedb.org/3/movie/{0}?api_key={1}".format(links.tmdbid,inhalt)
+        data = requests.get(url)
+        print(data)
+        data = data.json()
+        #print(data)
+        if 'overview' not in data:
+            return None
+        c = data['overview']
+        content.append(c)
+
+        if content== None: 
+            return None
+        #full_path = "https://image.tmdb.org/t/p/w500/" + poster_path
+    return content 
+
 
 
 
