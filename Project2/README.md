@@ -26,7 +26,9 @@ In the Project2 Folder the .py files and the sqlite data structure can be found.
 Navigate to the Project2 Folder and run the recommender.py script. 
 
 ### Features 
-  - feature
+  - Display of movie poster, Links, Tags, Genre and overview text for the respective movies
+  - Possibility to change ratings on the website
+  - 
 
 
 ### Preview 
