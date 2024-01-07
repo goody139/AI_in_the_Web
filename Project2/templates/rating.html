@@ -1,0 +1,7 @@
+Rated:
+{% for i in range(1, rating+1) %}
+<a href="#" class="card-link" data-movieid="{{ movie_id }}" data-rating="{{ i }}">⭐</a>
+{% endfor %}
+{% for i in range(rating+1, 5+1) %}
+<a href="#" class="card-link" data-movieid="{{ movie_id }}" data-rating="{{ i }}">☆</a>
+{% endfor %} Stars

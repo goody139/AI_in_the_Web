@@ -1,0 +1,392 @@
+{% extends "flask_user_layout.html" %}
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+
+<div class="container filter-container">
+    <div class="select-container">
+        <div class="select-wrapper">
+            <label for="select">Filter genres</label>
+            <select id="genres" name="genres" multiple size="4">
+                {% for g in genres %}
+                    <option value="{{ g[0] }}">{{ g[0] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+
+
+        <div class="select-wrapper">
+            <label for="select">Filter tags</label>
+            <select id="tags" name="tags" multiple size="4">
+                {% for t in tags %}
+                    <option value="{{ t[0] }}">{{ t[0] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div><!-- select-container -->
+
+    <div style="clear:both"></div>
+
+    <button id="filter_form" type="button">
+        <span id="filter_text" role="status">Apply filters</span>
+    </button>
+</div>
+
+<div class="container sort-container">
+    <div id="sort_mode_container">
+        <input type="checkbox" id="sort_mode" name="sort_mode">
+        <label id="sort_mode_label" for="sort_mode">Ascending</label>
+    </div>
+    <div class="select-wrapper">
+        <label for="select">Sort by</label>
+        <select id="sort_by" name="sort_by">
+            <option value="default">Default</option>
+            <option value="release_date">Release date</option>
+            <option value="runtime">Runtime</option>
+            <option value="mean_rating">Mean rating</option>
+            <option value="title">Title</option>
+        </select>
+    </div>
+</div>
+  
+
+<div id="movie_list" class="container">
+    {% for m,tags,rating,watchlisted,avg_rating in movies_and_tags %}
+        <div class="panel">
+            
+            <div class="panel-heading">
+                <div class="watchlist pull-left">
+                    {% if watchlisted%}
+                    <a href="#" class="card-link" data-movieid="{{ m.id }}" data-status="0">♥</a>
+                    {% else %}
+                    <a href="#" class="card-link" data-movieid="{{ m.id }}" data-status="0">♡</a>
+                    {% endif %}
+                </div>
+                <div class="panel-title pull-left"><b>{{ m.title }}</b></div>
+
+                {% for l in m.links %}
+                    <div class="db-links pull-right">
+                        <a href=https://movielens.org/movies/{{ l.movie_id }}>
+                            <img src="{{ url_for('static', filename='movielens-logo-white.svg') }}" alt="Movielens"> 
+                        </a>
+                        <a href=http://www.imdb.com/title/tt{{ l.imdb_id }}>
+                            <img src="{{ url_for('static', filename='IMDb.png') }}" alt="IMDb">
+                        </a>
+                        <a href=https://www.themoviedb.org/movie/{{ l.tmdb_id}}>
+                            <img src="{{ url_for('static', filename='TMDB.png') }}" alt="TMDB">
+                        </a>
+                    </div>
+                {% endfor %}
+
+                <div class="clearfix"></div>
+            </div>
+            <div class="panel-body">
+                
+                <img src="{{ m.poster_path }}"/>
+
+                <div class="movie-information">    
+                    <p>{{m.blurb}}</p>
+
+                    <br>
+                    <p>
+                        {% for g in m.genres %}
+                            <span class="label label-genre">{{ g.genre }}</span>
+                        {% endfor %}
+                    </p>
+                    <p>
+                        {% for t in tags %}
+                            <span class="label label-tag">{{ t }}</span>
+                        {% endfor %}
+                    </p>
+    
+                    <p>
+                        <b>Runtime: {{ m.runtime }} minutes</b>
+                    </p>
+
+                </div> <!-- movie-information -->       
+            </div> <!-- panel-body -->
+
+            {% if rating %}
+            <div class="panel-footer">
+                <div class="movie-rating">Rated:
+                {% for i in range(1, rating+1) %}
+                <a href="#" id="{{ m.id }}{{ i }}" class="card-link" data-movieid="{{ m.id }}" data-rating="{{ i }}">⭐</a>
+                {% endfor %}
+                {% for i in range(rating+1, 5+1) %}
+                <a href="#" id="{{ m.id }}{{ i }}" class="card-link" data-movieid="{{ m.id }}" data-rating="{{ i }}">☆</a>
+                {% endfor %} Stars
+                </div>
+                
+                <div class="average-rating">
+                    Average rating: {{ avg_rating }}
+                </div>
+            </div>
+            {% else %}
+            <div class="panel-footer">
+                <div class="movie-rating">Rate:
+                <a href="#" id="{{m.id}}1" class="card-link" data-movieid="{{ m.id }}" data-rating="1">☆</a>
+                <a href="#" id="{{m.id}}2" class="card-link" data-movieid="{{ m.id }}" data-rating="2">☆</a>
+                <a href="#" id="{{m.id}}3" class="card-link" data-movieid="{{ m.id }}" data-rating="3">☆</a>
+                <a href="#" id="{{m.id}}4" class="card-link" data-movieid="{{ m.id }}" data-rating="4">☆</a>
+                <a href="#" id="{{m.id}}5" class="card-link" data-movieid="{{ m.id }}" data-rating="5">☆</a> Stars
+                </div>
+
+                <div class="average-rating">
+                    Average rating: {{ avg_rating }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    // Function to handle the click event on any rating link
+    function rateMovie(event) {
+        event.preventDefault(); // Prevent the default anchor action
+
+        var movieid = this.getAttribute('data-movieid');
+        var rating = this.getAttribute('data-rating');
+        var elem = this;
+
+        // Create an AJAX request
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/rating', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        // Handle the response
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                // Replace the entire div with the response
+                elem.parentElement.innerHTML = xhr.responseText;
+                // Attach the event listener to each rating link
+                var links = document.querySelectorAll('.movie-rating .card-link');
+                for (var i = 0; i < links.length; i++) {
+                    links[i].addEventListener('click', rateMovie);
+                }
+            } else {
+                alert('Request failed. Returned status of ' + xhr.status);
+            }
+        };
+
+        // Send the request with the movie ID and the rating
+        xhr.send('m=' + movieid + '&r=' + rating);
+    }
+
+    function updateRatingView(event) {
+        event.preventDefault(); // Prevent the default anchor action
+
+        var movieid = this.getAttribute('data-movieid');
+        var rating = this.getAttribute('data-rating');
+        var elem = this;
+
+        // Create an AJAX request
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/ratings', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        // Handle the response
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                // Replace the entire div with the response
+                elem.parentElement.innerHTML = xhr.responseText;
+                // Attach the event listener to each rating link
+                var links = document.querySelectorAll('.movie-rating .card-link');
+                for (var i = 0; i < links.length; i++) {
+                    links[i].addEventListener('click', rateMovie);
+                    if(links[i].id!=elem.id) {
+                        links[i].addEventListener("mouseenter", updateRatingView);
+                    }
+                }
+            } else {
+                alert('Request failed. Returned status of ' + xhr.status);
+            }
+        };
+
+        // Send the request with the movie ID and the rating
+        xhr.send('m=' + movieid + '&r=' + rating);
+    }
+
+    function changeWatchlist(event) {
+        event.preventDefault(); // Prevent the default anchor action
+
+        var movieid = this.getAttribute('data-movieid');
+        var current_status = this.getAttribute('data-status');
+        var elem = this;
+
+        // Create an AJAX request
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/watchlist_change', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        // Handle the response
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                // Replace the entire div with the response
+                elem.parentElement.innerHTML = xhr.responseText;
+                // Attach the event listener to each rating link
+                var links = document.querySelectorAll('.watchlist .card-link');
+                for (var i = 0; i < links.length; i++) {
+                    links[i].addEventListener('click', changeWatchlist);
+                }
+            } else {
+                alert('Request failed. Returned status of ' + xhr.status);
+            }
+        };
+
+        // Send the request with the movie ID and the rating
+        xhr.send('m=' + movieid);
+    }
+
+    function reverseChildren(parent) {
+        for (var i = 1; i < parent.childNodes.length; i++){
+            parent.insertBefore(parent.childNodes[i], parent.firstChild);
+        }
+    }
+    
+    // pass the ids of the shown movies to pass to called functions for sorting
+    var movie_ids = {{ movie_ids|safe }};
+
+
+    // Attach the event listener to each rating link
+    var links = document.querySelectorAll('.movie-rating .card-link');
+    for (var i = 0; i < links.length; i++) {
+        links[i].addEventListener('click', rateMovie);
+        links[i].addEventListener("mouseenter", updateRatingView);
+    }
+
+    var links = document.querySelectorAll('.watchlist .card-link');
+    for (var i = 0; i < links.length; i++) {
+        links[i].addEventListener('click', changeWatchlist);
+    }
+
+    
+    const sort_checkbox = document.getElementById("sort_mode");
+    const sort_label = document.getElementById("sort_mode_label");
+    var movie_list = document.getElementById("movie_list");
+    const sort_by = document.getElementById("sort_by");
+    var filter_text = document.getElementById('filter_text');
+
+    // attach the listener to the check box for sorting ascending / descending
+    sort_checkbox.addEventListener("change", () => {
+        if (sort_checkbox.checked) {
+            sort_label.textContent = "Descending";
+            reverseChildren(movie_list);
+        } else {
+            sort_label.textContent = "Ascending";
+            reverseChildren(movie_list);
+        }
+    });
+
+
+    // this function was taken from an answer on StackOverflow from user allenhwkim: https://stackoverflow.com/a/47614491
+    
+    function setInnerHTML(elm, html) {
+        elm.innerHTML = html;
+        
+        Array.from(elm.querySelectorAll("script"))
+            .forEach( oldScriptEl => {
+            const newScriptEl = document.createElement("script");
+            
+            Array.from(oldScriptEl.attributes).forEach( attr => {
+                newScriptEl.setAttribute(attr.name, attr.value) 
+            });
+            
+            const scriptText = document.createTextNode(oldScriptEl.innerHTML);
+            newScriptEl.appendChild(scriptText);
+            
+            oldScriptEl.parentNode.replaceChild(newScriptEl, oldScriptEl);
+        });
+    }
+
+    // attach listener to select for changing the thing to sort by
+    sort_by.addEventListener("change", () => {
+        // make a request to call a python function that takes care of the sorting
+        // so that the movies part can be rendered again
+
+        event.preventDefault(); // Prevent the default anchor action
+
+        var sort_by_value = sort_by.options[ sort_by.selectedIndex ].value;
+
+        // Create an AJAX request
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/sort_by', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        var parameters = window.location.search
+
+        // Handle the response
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                // Replace the entire div with the response
+                setInnerHTML(movie_list, xhr.responseText);
+                //movie_list.innerHTML = xhr.responseText;
+                movie_list = document.getElementById("movie_list");
+
+            } else {
+                alert('Request failed. Returned status of ' + xhr.status);
+            }
+        };
+
+        if(typeof new_movie_ids !== 'undefined') {
+            movie_ids = new_movie_ids;
+
+        }
+        // Send the request with the selected sorting method
+        xhr.send('s=' + sort_by_value + '&type=' + window.location.pathname + '&movie_ids=' + movie_ids + '&' + parameters);
+
+        
+    });
+
+    
+    document.getElementById('filter_form').addEventListener("click", function() {
+        event.preventDefault(); // Prevent the default anchor action
+        this.disabled = true;
+        this.style.color = "#1e1e1e"
+        filter_text.textContent = "Filtering...";
+
+        var v = document.getElementById("genres").selectedOptions;
+        var genres = Array.from(v).map(({ value }) => value);
+        var v = document.getElementById('tags').selectedOptions;
+        var tags = Array.from(v).map(({ value }) => value);
+        var elem = this;
+
+        // Create an AJAX request
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/filter', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        // Handle the response
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                elem.disabled = false;
+                elem.style.color = "black"
+                filter_text.textContent = "Apply filters";
+                window.history.pushState('page2', 'Title', window.location.pathname + '?genres=' + genres + '&tags=' + tags);
+                
+                setInnerHTML(movie_list, xhr.responseText);
+                // movie_list.innerHTML = xhr.responseText;
+                movie_list = document.getElementById("movie_list");
+                
+                
+            } else {
+                alert('Request failed. Returned status of ' + xhr.status);
+                elem.disabled = false;
+                elem.style.color = "black"
+                filter_text.textContent = "Apply filters";
+            }
+        };
+
+        // Send the request with the movie ID and the rating
+        xhr.send('genres=' + genres + '&tags=' + tags);
+        
+    });
+        
+
+
+
+
+</script>
+
+{% endblock %}

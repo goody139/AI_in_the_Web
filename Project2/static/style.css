@@ -1,0 +1,218 @@
+/* dak color theme */
+
+body {
+    background-color: #121212;
+    color: rgb(255 255 255 / 85%)
+}
+
+h1 {
+    color: #dffabf;
+}
+
+
+
+
+.panel{
+    background-color:rgb(255 255 255 / 5%);
+}
+
+.panel-heading, .panel-footer{
+    background-color:rgb(255 255 255 / 7%);
+}
+
+.label {
+    height: fit-content;
+    padding: 4px 2px 2px 2px ;
+    color: black;
+}
+
+.label-genre {
+    background-color: #c2fabf;
+}
+
+.label-tag {
+    background-color: #d9bffa;
+}
+
+.watchlist {
+    padding-right: 1em;
+}
+
+
+.db-links {
+    width: 50%;
+}
+
+.db-links img{
+    height: 20px;
+    padding-left: 5%;
+    padding-right: 0;
+    float: right;
+
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+.wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.static-header, .static-footer {
+    background-color:rgb(255 255 255 / 5%);
+}
+.scrollable-body {
+    flex: 1;
+    overflow: auto;
+}
+
+
+.panel-body img {
+    float: left;
+    width: 25%
+}
+
+.movie-information {
+    float: left;
+    width: 75%;
+    padding-left: 1.2em;
+}
+
+
+
+label {
+    width: fit-content;
+    display: block;    
+}
+
+select {
+    box-shadow: inset 1px 1px 3px #000000;
+    border-radius: 5px;
+    border-color: rgb(255 255 255 / 7%);
+    appearance: none;
+    background-color: rgb(255 255 255 / 5%);
+    width: fit-content;
+    display: inline;
+}
+
+select[multiple] option:checked {
+    background: linear-gradient(0deg, #d9bffa 0%, #d9bffa 100%);
+    color: #000000;
+}
+
+
+.select-wrapper {
+    padding: 1em;
+    float: left;
+    width: fit-content;
+    height: fit-content;
+    display: inline;
+}
+
+.select-container {
+    display: block;
+}
+
+.filter-container {
+
+}
+
+#filter_form input{
+    display: block;
+    float: inline-start;
+    background-color: #d9bffa;
+    color: #000000;
+    border-radius: 5px;
+    border-width: 0;
+    padding-top: 4px;
+    margin: 1em;
+}
+
+.sort-container {
+}
+
+.sort-container .select-wrapper{
+    float: right;
+}
+
+.sort-container input {
+    padding-left: 20px;
+    display: inline;
+    
+}
+
+.sort-container label {
+    display: inline;
+}
+
+#sort_mode_container {
+    margin: 1em;
+    padding: 4px 2px 2px 2px;
+    float: right;
+}
+
+#sort_mode{
+    -webkit-appearance: initial;
+    appearance: initial;
+    position: relative;
+    content: "\2713";
+    color: #fff;
+}
+#sort_mode:checked {
+}
+
+
+#sort_mode:checked:after {
+    content: "\25BC"; /* descending: triangle pointing down*/
+    color: #fff;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%,-50%);
+    -moz-transform: translate(-50%,-50%);
+    -ms-transform: translate(-50%,-50%);
+    transform: translate(-50%,-50%);
+}
+
+#sort_mode:after {
+    content: "\25B2"; /* ascending: triangle pointing up */
+    color: #fff;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%,-50%);
+    -moz-transform: translate(-50%,-50%);
+    -ms-transform: translate(-50%,-50%);
+    transform: translate(-50%,-50%);
+}
+
+#sort_by {
+}
+
+#sort_by option {
+    background-color: #1E1E1E;
+}
+
+#sort_by option:checked {
+    background-color: #d9bffa;
+    color: black;
+}
+
+.movie-rating {
+    display: inline;
+}
+
+.average-rating {
+    display: inline;
+    float: inline-end;
+}
+
+button {
+    margin-left: 1em;
+    background-color: #d9bffa;
+    color: #000000;
+    border-radius: 5px;
+    border-color: #d9bffa;
+}
