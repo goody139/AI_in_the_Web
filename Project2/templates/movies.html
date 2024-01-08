@@ -7,27 +7,38 @@
 <div class="container filter-container">
     <div class="select-container">
         <div class="select-wrapper">
-            <label for="select">Filter genres</label>
+            <label class="select-label" for="select">Filter genres</label>
             <select id="genres" name="genres" multiple size="4">
                 {% for g in genres %}
                     <option value="{{ g[0] }}">{{ g[0] }}</option>
                 {% endfor %}
             </select>
+            <div>
+                <input type="checkbox" id="apply_all_genres" name="apply_all_genres" checked />
+                <label for="apply_all_genres">Only filter movies matching all selected genres</label>
+            </div>
         </div>
 
 
 
         <div class="select-wrapper">
-            <label for="select">Filter tags</label>
+            <label class="select-label" for="select">Filter tags</label>
             <select id="tags" name="tags" multiple size="4">
                 {% for t in tags %}
                     <option value="{{ t[0] }}">{{ t[0] }}</option>
                 {% endfor %}
             </select>
+            <div>
+                <input type="checkbox" id="apply_all_tag" name="apply_all_tags" checked />
+                <label for="apply_all_tags">Only filter movies matching all selected tags</label>
+            </div>
         </div>
     </div><!-- select-container -->
 
     <div style="clear:both"></div>
+
+    <input type="checkbox" id="apply_genres_and_tags" name="apply_genres_and_tags" checked />
+    <label for="apply_genres_and_tags">Only filter movies matching genres and tags</label>
 
     <button id="filter_form" type="button">
         <span id="filter_text" role="status">Apply filters</span>
@@ -378,8 +389,19 @@
             }
         };
 
-        // Send the request with the movie ID and the rating
-        xhr.send('genres=' + genres + '&tags=' + tags);
+
+        var request_parameters = 'type=' + window.location.pathname
+
+        if (genres.length > 0) {
+            request_parameters += '&genres=' + genres
+        }
+
+        if (tags.length > 0) {
+            request_parameters += '&tags=' + tags
+        }
+
+        // Send the request with the parameters
+        xhr.send(request_parameters);
         
     });
         

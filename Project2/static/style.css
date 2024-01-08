@@ -84,6 +84,11 @@ html, body {
 
 label {
     width: fit-content;
+    display: inline;    
+}
+
+.select-label {
+    width: fit-content;
     display: block;    
 }
 
@@ -120,8 +125,7 @@ select[multiple] option:checked {
 }
 
 #filter_form input{
-    display: block;
-    float: inline-start;
+    display: inline;
     background-color: #d9bffa;
     color: #000000;
     border-radius: 5px;
@@ -210,6 +214,7 @@ select[multiple] option:checked {
 }
 
 button {
+    display: inline;
     margin-left: 1em;
     background-color: #d9bffa;
     color: #000000;

@@ -2,7 +2,7 @@
 
 from flask import Flask, render_template, request
 from flask_user import login_required, UserManager, current_user
-from sqlalchemy import func, desc, delete
+from sqlalchemy import func, desc, delete, select
 from models import db, User, Movie, MovieGenre, MovieRating, MovieTag, WatchList
 from read_data import check_and_read_data, get_tmdb_data_for_movie
 import time
@@ -137,38 +137,76 @@ def movies_page_filtered():
     print(request.form)
     genres = []
     tags = []
-
-    if not 'genres' in request.form:
+    
+    if not 'type' in request.form:
         return render_template("return_to_start.html", title='No search term', error_cause='No search term provided')
-    elif not 'tags' in request. form:
-        return render_template("return_to_start.html", title='No search term', error_cause='No search term provided')
-    else:
-
-        
+    
+    else:       
+        request_type = request.form.get('type')[1:]
+        if  'genres' in request.form:
+            genres = request.form.get('genres').split(",")
+        if  'tags' in request. form:
+            tags = request.form.get('tags').split(",")
         print("looking for both")
 
-        genres = request.form.get('genres').split(",")
-        tags = request.form.get('tags').split(",")
+        # the elements to filter vary based on the request type
+        database_for_filtering = Movie.query
+        if request_type == 'movies':
+            database_for_filtering = Movie.query
+        elif request_type == 'watchlist':
+            database_for_filtering =  Movie.query.filter(Movie.id.in_(select(WatchList.movie_id)))
+            print(database_for_filtering)
+        elif request_type == 'recommendations':
+            # get recommendations
+            movie_ids = get_recommendations_movies()
+            # get query of these from the database
+            database_for_filtering = Movie.query.filter(Movie.id.in_(movie_ids))
+        else:
+            return "Invalid type", 400      
+
+        
+        
 
         print(genres, tags)
 
-        # first 10 movies
-        movies = Movie.query.limit(10).all()
 
         if genres and tags:
             print("looking for both", genres, tags)
-            movies = Movie.query\
+            movies = database_for_filtering\
                 .filter(Movie.genres.any(MovieGenre.genre.in_(genres))) \
                 .filter(Movie.tags.any(MovieTag.tag.in_(tags))) \
                 .limit(10).all()
 
         elif genres:
             print("looking for genres", genres)
-            movies = Movie.query.filter(Movie.genres.any(MovieGenre.genre.in_(genres))).limit(10).all()
+            movies = database_for_filtering.filter(Movie.genres.any(MovieGenre.genre.in_(genres))).limit(10).all()
 
         elif tags:
             print("looking for tags", tags)
-            movies = Movie.query.filter(Movie.tags.any(MovieTag.tag.in_(tags))).limit(10).all()
+            movies = database_for_filtering.filter(Movie.tags.any(MovieTag.tag.in_(tags))).limit(10).all()
+
+        print("r",movies)
+        if request_type == 'recommendations' and len(movies)==0:
+            movie_ids = get_recommendations_movies(number_to_recommend=1000)
+            database_for_filtering = Movie.query.filter(Movie.id.in_(movie_ids))
+
+            if genres and tags:
+                print("looking for both", genres, tags)
+                movies = database_for_filtering\
+                    .filter(Movie.genres.any(MovieGenre.genre.in_(genres))) \
+                    .filter(Movie.tags.any(MovieTag.tag.in_(tags))) \
+                    .limit(10).all()
+
+            elif genres:
+                print("looking for genres", genres)
+                movies = database_for_filtering.filter(Movie.genres.any(MovieGenre.genre.in_(genres))).limit(10).all()
+
+            elif tags:
+                print("looking for tags", tags)
+                movies = database_for_filtering.filter(Movie.tags.any(MovieTag.tag.in_(tags))).limit(10).all()
+
+            print("r2",movies)
+
 
         return render_movies_template(movies, "movies_list.html")
 
@@ -245,16 +283,16 @@ def get_watchlist_movies():
     movie_ids = [watchlist_item.movie_id  for watchlist_item in watchlist]
     return movie_ids
 
-def get_recommendations_movies():
+def get_recommendations_movies(number_to_recommend=10):
     query = MovieRating.query.filter(MovieRating.user_id==current_user.id, MovieRating.timestamp>timestamp_of_last_model_fit)
 
     if query.all():
         new_ratings = pd.read_sql(query.statement, con=db.get_engine().connect(), index_col=None)
         new_ratings = new_ratings.rename(columns={"user_id":"user", "movie_id":"item"})
         new_ratings = new_ratings.set_index('item')['rating']
-        recs = algo.recommend(user=current_user.id, n=10, ratings=new_ratings)
+        recs = algo.recommend(user=current_user.id, n=number_to_recommend, ratings=new_ratings)
     else:
-        recs = algo.recommend(user=current_user.id, n=10)
+        recs = algo.recommend(user=current_user.id, n=number_to_recommend)
 
     print("recommendations:", recs)
 
@@ -331,8 +369,18 @@ def get_newly_sorted_items():
         elif sort_by == 'title':
             q = q.order_by(Movie.title)
         elif sort_by == 'mean_rating':
-            avg = MovieRating.query.order_by(MovieRating.movie_id).group_by(MovieRating.movie_id).with_entities(func.avg(MovieRating.rating)).filter(MovieRating.movie_id.in_(movies)).all()
-            movies.sort()
+            averages = MovieRating.query.order_by(MovieRating.movie_id).group_by(MovieRating.movie_id).with_entities(func.avg(MovieRating.rating).label('average'))
+            avg = []
+            for m in movies:
+                print(averages.filter(MovieRating.movie_id==m).first(), m)
+                avg.append(averages.filter(MovieRating.movie_id==m).first())
+            # avg = db.session.query(func.avg(MovieRating.rating)).group_by(MovieRating.movie_id).filter(MovieRating.movie_id.in_(movies)).all()
+
+            print(MovieRating.query.group_by(MovieRating.movie_id).with_entities(func.avg(MovieRating.rating).label('average')).filter(MovieRating.movie_id.in_(movies)).first())
+            print(MovieRating.query.filter(MovieRating.movie_id.in_(movies)).first())
+
+
+            print("avg", avg)
             sorted_indices = np.argsort(np.array(avg).flatten())
             sorted_movies = np.array(movies)[sorted_indices]
             q = []
