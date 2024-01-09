@@ -1,127 +1,202 @@
 # Containts parts from: https://flask-user.readthedocs.io/en/latest/quickstart_app.html
 
-from flask import Flask, render_template, request, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.exc import IntegrityError
-from flask_user import login_required, UserManager, UserMixin, current_user
+from flask import Flask, render_template, request
+from flask_user import login_required, UserManager, current_user
 from read_data import check_and_read_data
 from helper_functions import *
 from models import *
-
+import pandas as pd
+import random
 
 # Running on http://127.0.0.1:5000/
 
-#------------------ TODO LIST ------------------#
-""" 
---> movie posters that could not be found / are still missing 
-
-movie IDS :
-keys = [128, 678, 791, 875, 979, 1107, 1423, 2851, 4051, 4207, 4568, 5069, 5209, 7646, 7669, 7762, 7841, 7842, 26453, 26587, 26614, 26649, 26693, 26761, 26849, 26887, 27002, 27036, 27251, 27611, 27708, 27751, 31193, 32294, 32600, 38198, 40697, 42602, 49917, 51024, 52281, 53883, 55207, 57772, 61406, 62336, 62970, 63433, 64167, 65135, 65359, 66544, 66934, 69524, 69849, 70521, 71160, 72982, 77177, 79299, 84847, 85780, 86237, 86487, 90647, 90945, 92475, 93008, 93040, 93988, 95717, 95738, 96471, 96518, 96520, 99532, 99764, 100044, 100553, 105250, 106642, 107780, 108727, 115111, 115969, 121035, 122260, 122926, 126430, 127180, 127390, 131724, 137859, 139130, 140481, 140737, 141816, 142115, 147250, 147328, 147330, 148675, 150548, 151763, 152284, 152711, 159817, 163809, 167570, 170705, 171011, 171495, 171749, 172497, 172825, 172909, 173535, 173873, 174053, 174403, 175693, 176329, 178129, 179135, 180263, 180777, 184257, 185135, 193579]
-Einfach so lassen? Oder mit der Google API nocheinmal versuchen zu füllen? 
-
-- wie timestaps händeln? : "wenn advanced recommender system benötigt" Thelen
-- wenn rating gerated worden ist farbe ändern oder so? Oder sterne system
-- Rating algorithm : 
-    For a given user: 
-        find similar values 
-        for all objects that dont have a value yet predict 
-        return recommendation 
-
-    --> schauen, ob die gleichen filme hoch gerated werden, oder ähnliches genre ?! 
-"""
-#------------------ TODO LIST ------------------#
 
 
-# Class-based application configuration
 class ConfigClass(object):
     """ Flask application config """
 
-    # Flask settings
+    # FLASK
     SECRET_KEY = 'This is an INSECURE secret!! DO NOT use this in production!!'
 
-    # Flask-SQLAlchemy settings
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///movie_recommender.sqlite'  # File-based SQL database
-    SQLALCHEMY_TRACK_MODIFICATIONS = False  # Avoids SQLAlchemy warning
+    # FLASK SQALCHEMY 
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///movie_recommender.sqlite' 
+    SQLALCHEMY_TRACK_MODIFICATIONS = False 
 
-    # Flask-User settings
-    USER_APP_NAME = "Movie Recommender"  # Shown in and email templates and page footers
-    USER_ENABLE_EMAIL = False  # Disable email authentication
-    USER_ENABLE_USERNAME = True  # Enable username authentication
-    USER_REQUIRE_RETYPE_PASSWORD = True  # Simplify register form
+    # FLASK-USER 
+    USER_APP_NAME = "MADVISOR - Your Movie Advisor"
+    USER_ENABLE_EMAIL = False  
+    USER_ENABLE_USERNAME = True  
+    USER_REQUIRE_RETYPE_PASSWORD = True  
 
 
-# Create Flask app load app.config
+# CREATE FLASK APP 
 app = Flask(__name__)
 app.config.from_object(__name__ + '.ConfigClass')
 app.app_context().push()
 
-db.init_app(app)  # initialize database
-db.create_all()  # create database if necessary
-user_manager = UserManager(app, db, User)  # initialize Flask-User management
+db.init_app(app) 
+db.create_all()  
+user_manager = UserManager(app, db, User) 
 
-# Create all database tables if not initialized yet 
+# CREATE DATABASE 
 check_and_read_data(db)
 
 
-# The Home page is accessible to anyone
 @app.route('/')
 def home_page():
-    # render home.html template
+    """ Home page """
     return render_template("home.html")
 
-# The Members page is only accessible to authenticated users via the @login_required decorator
+@app.route('/FavMov')
+def fav_mov_page():
+    """ Favorite Movies """
+    faves = get_fav_movies(current_user.id)
+    movies= get_movies(faves)
+    _, _, _, result_list, _ = prepare_movie_template(movies, current_user.id)
+    return render_template("fav_movies.html", user_id= current_user.id, movies=movies, results=result_list, faves=faves)
+
 @app.route('/movies')
-@login_required  # User must be authenticated
+@login_required 
 def movies_page():
-    # IDEE : zum anklicken machen - based on tags - (Your Genre! / Your artists! / Your Vibe!)
-    # so etwas zum sliden? 
+    """ Movies page """
+    
+    # DEFAULT -- 10 best rated movies with random genre 
+    genre_list = genre_list = ['Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy', 'Film-Noir', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western', 'Other']
+    #movies = filter_best([], random.choice(genre_list), 10, db, include=False, user_id=current_user.id)
+    movies, scores = build_recommender(genre=[random.choice(genre_list)], tag=None, algo="Best rated movies", number=10, user_id="off", include="", db=db)
+    faves, tag_list, genre_list, result_list, title_list = prepare_movie_template(movies, current_user.id, scores)
 
-    user= current_user
-    user_id = user.id
+    return render_template("movies.html", user_id= current_user.id, tag_list= tag_list, genre_list= genre_list, title_list=title_list, results=result_list, faves=faves)
 
-    genre = "Horror"
-    movies = get_recommendations(user_id, genre)
-    movies = get_movies(movies)
+@app.route('/recommend', methods=['POST'])
+@login_required
+def recomend():
+    """ Recommendation functionality """
 
-    # result list 
-    MOVIEID, IMDB, TMBID = create_links(movies) 
-    poster_links = movie_poster(movies)
-    tags = create_tags(movies) 
-    contents = create_content(movies) 
+    if request.method == 'POST':
+        
+        # GET filter options 
+        user_id = request.form.get('user_id')
+        tag = request.form.get('tag')
+        genre = request.form.get('genre')
+        number = request.form.get('number')
+        algorithm = request.form.get('algorithm')
+        include = request.form.get('include')
 
-    result_list = zip(movies, MOVIEID, IMDB, TMBID, poster_links, tags, contents)
+        # ADAPT values to python 
+        filter_options = [genre, tag]
 
-    return render_template("rating.html", movies=movies, movieid=MOVIEID, imdb=IMDB, tmbid=TMBID, results=result_list)
+        for i in range(0, len(filter_options)): 
+
+            # Nothing 
+            if filter_options[i] == "0": 
+                filter_options[i]= []
+
+            # Several
+            elif ',' in filter_options[i]: 
+                filter_options[i] = filter_options[i].split(',')
+
+            # Single  
+            else: 
+               filter_options[i] = [ filter_options[i] ]
+
+
+        # EXCEPTIONS 
+        if number == "0": 
+            number = 10
+
+        if genre == "other": 
+            filter_options[0] = "(no genres listed)"
+
+        
+        # BUILD model  
+        movies, normalized_scores = build_recommender(genre=filter_options[0], tag=filter_options[1], algo=algorithm, number= int(number), include=include, db=db, user_id=int(user_id))  
+        faves, tag_list, genre_list, result_list, title_list = prepare_movie_template(movies, user_id, normalized_scores)
+
+        print("FINISHED")
+        return render_template("movies_content.html", tag_list= tag_list, genre_list= genre_list, title_list=title_list, movies=movies, results=result_list, faves=faves)
 
 @app.route('/rate', methods=['POST'])
 @login_required
 def rate():
+    """ Rating functionality """
+
     if request.method == 'POST':
 
-        # provide links for movie 
+        # PROVIDE Links
         movie_id = request.form.get('movie_id')
-
         rating_value = int(request.form.get('rating'))
-        
-        # Checking if rating for movie was already submitted 
+      
+        # CHECK : Rating already submitted? 
         existing_rating = Rating.query.filter_by(user_id=current_user.id, movie_id=movie_id).first()
         
-        # if yes update rating  
+        # If yes, update Rating 
         if existing_rating: 
             existing_rating.rating_value = rating_value
             db.session.commit()   
 
-        # if not create new entry 
+        # Else create new entry 
         else:
-            # Speichern Sie die Bewertung für den aktuellen Benutzer und den Film
             rating = Rating(user_id=current_user.id, movie_id=movie_id, rating_value=rating_value)
             db.session.add(rating)
             db.session.commit()            
 
         return "Bewertung erfolgreich gespeichert!"
 
+@app.route('/like', methods=['POST'])
+@login_required
+def like():
+    """ Like functionality """
 
-# Start development web server
+    # CHECK : Like already in database?
+    movie_id = request.form.get('movie_id')
+    existing_like= Favorite.query.filter_by(user_id=current_user.id, movie_id=movie_id).first()
+    
+    # If no, CREATE new database entry 
+    if existing_like == None: 
+        new_like = Favorite(user_id=current_user.id, movie_id= movie_id, favorite_movie=True)
+        db.session.add(new_like)
+        db.session.commit()
+
+    # UNLIKE  
+    elif existing_like.favorite_movie == True: 
+        print("UNLIKE MOVIE ")
+        existing_like.favorite_movie = False
+        db.session.commit()
+ 
+    # LIKE  
+    elif existing_like.favorite_movie == False: 
+        print("LIKE MOVIE")
+        existing_like.favorite_movie = True
+        db.session.commit()     
+
+    return "movie liked or unliked successfully"
+
+@app.route('/predict/<user_id>/<movie_id>')
+def predict(user_id, movie_id):
+    # Load user and movie data from the database (replace 'users' and 'movies' with your actual table names)
+    cursor.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
+    user_data = cursor.fetchone()
+
+    cursor.execute("SELECT * FROM movies WHERE movie_id = ?", (movie_id,))
+    movie_data = cursor.fetchone()
+
+    if user_data is None or movie_data is None:
+        return "User or movie not found"
+
+    # Prepare data for prediction
+    user = user_data[0]  # Replace with the actual user data extraction logic
+    item = movie_data[0]  # Replace with the actual movie data extraction logic
+
+    # Make a prediction
+    prediction = model.predict(user, item)
+
+    # Assuming prediction is a rating, convert it to a probability (replace this logic with your own)
+    probability = (prediction + 1) / 2 * 100  # Example
+
+    return f"The predicted probability that user {user_id} likes movie {movie_id} is: {probability:.2f}%"
+
+# START SERVER 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
 

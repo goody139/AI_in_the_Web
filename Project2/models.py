@@ -40,13 +40,14 @@ class Rating(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'))
     rating_value = db.Column(db.Integer)
+    timestamp = db.Column(db.Integer)
 
 class Tag(db.Model): 
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'))
-    tag = db.Column(db.Integer)
+    tag = db.Column(db.String)
 
 class Link(db.Model): 
     __tablename__ = 'links'
@@ -61,4 +62,13 @@ class Image(db.Model):
     movieid = db.Column(db.Integer)
     link = db.Column(db.String(255), nullable=False, server_default='')
     #content = link = db.Column(db.String(255), nullable=False, server_default='No overview given')
+
+class Favorite(db.Model): 
+    __tablename__ = 'favorites'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'))
+    favorite_movie= db.Column(db.Boolean) 
+
+
 
