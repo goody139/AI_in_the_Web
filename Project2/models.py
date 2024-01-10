@@ -26,6 +26,7 @@ class Movie(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100, collation='NOCASE'), nullable=False, unique=True)
     genres = db.relationship('MovieGenre', backref='movie', lazy=True)
+    content = db.Column(db.String(100, collation='NOCASE'))
 
 
 class MovieGenre(db.Model):

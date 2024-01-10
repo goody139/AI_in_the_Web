@@ -365,8 +365,8 @@ label ::before{
 
 
             <select multiple id="TitleDropdown" class="Selector">
-            {% for t in title_list %}
-                    <option name="selected_Title" value="{{ t }}"> {{ t }}</option>
+            {% for t, d in item_list %}
+                    <option name="selected_Title" value="{{ t }}" data-description="{{d}}"> {{ t }}</option>
             {% endfor %}
             </select>
 
@@ -473,6 +473,26 @@ label ::before{
 
 
 <script>
+
+var searchBar = document.getElementById('myInputTitle');
+
+// Event-Listener hinzufügen
+searchBar.addEventListener('keyup', function (event) {
+  
+  // input in filterview einfügen 
+  if (event.keyCode === 13) {
+    if(! selectedOptions["Title"].includes(searchBar.value) && selectedOptions["Title"].length <= 2){
+    selectedOptions["Title"].push(searchBar.value)
+    }
+  }
+
+  // wie damit umgehen? in update filter view wird nicht gespeichert, da nicht selected ist boolean? wenn 
+  // geklickt wird?!
+  // in dem moment für recommender speichern, welche optionen noch eingeblendet sind (durch suche )
+  console.log(document.getElementById('TitleDropdown'))
+  updateFilterView();
+});
+
 
 var selectedOptions = {};
 
@@ -590,7 +610,7 @@ function getSelectedValues(selectId) {
 
     function filterFunction(category) {
         var input, filter, div, optionList, i;
-        console.log("myInput"+category);
+        //console.log("myInput"+category);
         input = document.getElementById("myInput"+category);
         filter = input.value.toUpperCase();
         div = document.getElementById("myDropdown"+category);
@@ -599,11 +619,27 @@ function getSelectedValues(selectId) {
 
         for (i = 0; i < optionList.length; i++) {
             var txtValue = optionList[i].textContent || optionList[i].innerText;
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                optionList[i].style.display = "";
-                matchedElements.push(optionList[i]); 
-            } else {
-                optionList[i].style.display = "none";
+
+            if (category == 'Title'){
+                var description = optionList[i].dataset.description;
+
+                if (txtValue.toUpperCase().indexOf(filter) > -1 || description.toUpperCase().indexOf(filter) > -1) {
+                    optionList[i].style.display = "";
+                    matchedElements.push(optionList[i]);
+                } else {
+                    optionList[i].style.display = "none";
+                }
+
+            }
+
+            else {
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    console.log("other")
+                    optionList[i].style.display = "";
+                    matchedElements.push(optionList[i]); 
+                } else {
+                    optionList[i].style.display = "none";
+                }
             }
         }
 
@@ -687,9 +723,13 @@ function getSelectedValues(selectId) {
     var genre = getSelectedValue('option[name="selected_Genre"]');
     var number = getSelectedValue('option[name="selected_NrRec"]');
     var algorithm = getSelectedValue('option[name="selected_Algorithm"]');
-    var title = getSelectedValue('option[name="selected_Title"]'); 
     var include = getSelectedValue('input[name="include"]');
     var allFilters = getSelectedValue('option[name="all_filters"]');
+    
+    // selected options der titel in dem moment speichern zu der liste in der gesucht wird 
+    // das sind dann nicht selected ones, sondern müssen die sein, die gefiltert werden in dem Moment 
+    // wie löschen (mehrere items) wenn option weggeklickt wird dictionary? item keys konstrukt 
+    var title = selectedOptions["Title"]
 
     console.debug("GET VALUES")
     console.debug(tag, genre, number, algorithm, title, include, allFilters)
@@ -701,7 +741,7 @@ function getSelectedValues(selectId) {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: 'user_id=' + user_id + '&tag=' + tag + '&genre=' + genre + '&number=' + number + '&algorithm=' + algorithm + "&include=" + include,
+        body: 'user_id=' + user_id + '&tag=' + tag + '&genre=' + genre + '&number=' + number + '&algorithm=' + algorithm + "&include=" + include + "&title=" + title,
     })
     .then(response => {
         if (!response.ok) {
