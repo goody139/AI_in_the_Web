@@ -1,7 +1,7 @@
 import csv
 from sqlalchemy.exc import IntegrityError
 from models import *
-from helper_functions import get_movie_poster_links
+from helper_functions import get_movie_poster_links, create_content
 
 def check_and_read_data(db):
     """ Read in data from csv and add Database tables."""
@@ -17,6 +17,7 @@ def check_and_read_data(db):
                         id = row[0]
                         title = row[1]
                         movie = Movie(id=id, title=title)
+
                         db.session.add(movie)
                         genres = row[2].split('|') 
                         for genre in genres:  
@@ -125,3 +126,10 @@ def check_and_read_data(db):
             count += 1
             if count % 100 == 0:
                 print(count, "movie poster links saved")   
+
+    """
+    for movie in Movie.query.all():
+        movie.content = create_content([movie])[0]
+        print("commited movie", movie.title)
+        db.session.commit()
+    """

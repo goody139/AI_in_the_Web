@@ -72,6 +72,7 @@ def create_content(movies):
 
     content = []
     for movie in movies: 
+        print(movie, movie.id)
         links = Link.query.filter_by(movieid=movie.id).first()
         #print(links.tmdbid)
         url = "https://api.themoviedb.org/3/movie/{0}?api_key={1}".format(links.tmdbid,inhalt)
@@ -175,10 +176,9 @@ def prepare_movie_template(movies, user_id, prob):
     tag_list = create_tag_list()
     genre_list = ['Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy', 'Film-Noir', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western', 'Other']
     result_list = zip(movies, MOVIEID, IMDB, TMBID, poster_links, tags, contents, ratings, reviews, probabilities)
-    #print(movies, MOVIEID, IMDB, TMBID, poster_links, tags, contents, ratings, reviews)
-    title_list = [title.title for title in Movie.query.all()]
-
-    return [faves, tag_list, genre_list, result_list, title_list]
+    item_list = zip([title.title for title in Movie.query.all()], [d.content for d in Movie.query.all()])
+    print("READY with preparation")
+    return [faves, tag_list, genre_list, result_list, item_list]
 
 def movie_poster(movies): 
     link_list = []

@@ -63,10 +63,12 @@ def movies_page():
     # DEFAULT -- 10 best rated movies with random genre 
     genre_list = genre_list = ['Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy', 'Film-Noir', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western', 'Other']
     #movies = filter_best([], random.choice(genre_list), 10, db, include=False, user_id=current_user.id)
+    print("BUILD MODEL")
     movies, scores = build_recommender(genre=[random.choice(genre_list)], tag=None, algo="Best rated movies", number=10, user_id="off", include="", db=db)
-    faves, tag_list, genre_list, result_list, title_list = prepare_movie_template(movies, current_user.id, scores)
+    print("prepare")
+    faves, tag_list, genre_list, result_list, item_list = prepare_movie_template(movies, current_user.id, scores)
 
-    return render_template("movies.html", user_id= current_user.id, tag_list= tag_list, genre_list= genre_list, title_list=title_list, results=result_list, faves=faves)
+    return render_template("movies.html", user_id= current_user.id, tag_list= tag_list, genre_list= genre_list, item_list=item_list, results=result_list, faves=faves)
 
 @app.route('/recommend', methods=['POST'])
 @login_required
@@ -82,6 +84,7 @@ def recomend():
         number = request.form.get('number')
         algorithm = request.form.get('algorithm')
         include = request.form.get('include')
+        title = request.form.get('title')
 
         # ADAPT values to python 
         filter_options = [genre, tag]
@@ -111,10 +114,10 @@ def recomend():
         
         # BUILD model  
         movies, normalized_scores = build_recommender(genre=filter_options[0], tag=filter_options[1], algo=algorithm, number= int(number), include=include, db=db, user_id=int(user_id))  
-        faves, tag_list, genre_list, result_list, title_list = prepare_movie_template(movies, user_id, normalized_scores)
+        faves, tag_list, genre_list, result_list, item_list = prepare_movie_template(movies, user_id, normalized_scores)
 
         print("FINISHED")
-        return render_template("movies_content.html", tag_list= tag_list, genre_list= genre_list, title_list=title_list, movies=movies, results=result_list, faves=faves)
+        return render_template("movies_content.html", tag_list= tag_list, genre_list= genre_list, item_list=item_list, movies=movies, results=result_list, faves=faves)
 
 @app.route('/rate', methods=['POST'])
 @login_required
@@ -171,30 +174,6 @@ def like():
         db.session.commit()     
 
     return "movie liked or unliked successfully"
-
-@app.route('/predict/<user_id>/<movie_id>')
-def predict(user_id, movie_id):
-    # Load user and movie data from the database (replace 'users' and 'movies' with your actual table names)
-    cursor.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
-    user_data = cursor.fetchone()
-
-    cursor.execute("SELECT * FROM movies WHERE movie_id = ?", (movie_id,))
-    movie_data = cursor.fetchone()
-
-    if user_data is None or movie_data is None:
-        return "User or movie not found"
-
-    # Prepare data for prediction
-    user = user_data[0]  # Replace with the actual user data extraction logic
-    item = movie_data[0]  # Replace with the actual movie data extraction logic
-
-    # Make a prediction
-    prediction = model.predict(user, item)
-
-    # Assuming prediction is a rating, convert it to a probability (replace this logic with your own)
-    probability = (prediction + 1) / 2 * 100  # Example
-
-    return f"The predicted probability that user {user_id} likes movie {movie_id} is: {probability:.2f}%"
 
 # START SERVER 
 if __name__ == '__main__':
