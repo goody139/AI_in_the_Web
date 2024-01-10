@@ -1,0 +1,81 @@
+<div class="container">
+    <h2>Movies</h2>
+
+    {% for m, mid, imid, tmbid, link, tag, content, rating, reviews, probability in results %}
+        <div class="panel panel-default" >
+            <div class="panel-heading"><b>{{ m.title }}</b>
+                <a href={{mid}} target="_blank">&nbsp;  &nbsp; &nbsp;  MOVIELENS  &nbsp; </a>
+                <a href={{imid}} target="_blank">  &nbsp; IMDB &nbsp;  </a>
+                <a href={{tmbid}} target="_blank"> &nbsp;  TMDB &nbsp;  </a>
+
+            </div>
+             
+            <div class="panel-body">
+                <p>
+                    {% for g in m.genres %}
+                        <span class="label label-default" style="background-color: yellowgreen;">{{ g.genre }}</span>
+                    {% endfor %}  
+
+                    {% for t in tag %}
+                    <span class="label label-default" style="background-color: goldenrod;">{{ t }}</span>
+                    {% endfor %}
+                </p>
+
+                <div class="like-area">  
+                    {% set checked = (m.id in faves)%}
+                    <input type="checkbox" id="like_{{ m.id }}" {% if checked == True%} checked {% endif %} name="like_{{ m.id }}"onclick="likeMovie('{{ m.id }}')"> <label for="like_{{ m.id }}"></label>
+                </div>
+
+                <div class="rate-area">
+                    <input type="radio" id="5-star_{{ m.id }}" name="rating_{{ m.id }}" value="5" {% if 5 == rating.rating_value%} checked {% endif %}onclick="rateMovie('{{ m.id }}')" /><label for="5-star_{{ m.id }}" title="Amazing">5 stars</label>
+                    <input type="radio" id="4-star_{{ m.id }}" name="rating_{{ m.id }}" value="4" {% if 4 == rating.rating_value%} checked {% endif %}onclick="rateMovie('{{ m.id }}')" /><label for="4-star_{{ m.id }}" title="Good">4 stars</label>
+                    <input type="radio" id="3-star_{{ m.id }}" name="rating_{{ m.id }}" value="3" {% if 3 == rating.rating_value%} checked {% endif %}onclick="rateMovie('{{ m.id }}')" /><label for="3-star_{{ m.id }}" title="Average">3 stars</label>
+                    <input type="radio" id="2-star_{{ m.id }}" name="rating_{{ m.id }}" value="2" {% if 2 == rating.rating_value%} checked {% endif %}onclick="rateMovie('{{ m.id }}')" /><label for="2-star_{{ m.id }}" title="Not bad">2 stars</label>
+                    <input type="radio" id="1-star_{{ m.id }}" name="rating_{{ m.id }}" value="1" {% if 1 == rating.rating_value%} checked {% endif %}onclick="rateMovie('{{ m.id }}')" /><label for="1-star_{{ m.id }}" title="Terrible">1 stars</label>
+                </div>
+                
+                <br> 
+
+                <div id="filterView">
+                    <div class="filterOption"> 
+                        With a probability of {{probability}} % u like the movie
+                    </div>
+                </div>
+                    
+                <div class="picture-container">
+                    <div class="picture-image"> 
+                    <img src={{link}} alt="Imagine a poster of the movie {{m.title}} would be here" width="150"> </div>
+                    <div class="review-container">
+                    <div class="review-header"> Reviews</div>
+                    
+                    
+                    <div class="picture-text">
+                    
+                    {% for r in reviews %}
+                    <div class="review-container"> 
+                        
+                        <p><b>{{r}}</b></p>
+                        
+                    </div>
+                    {% endfor %}
+
+
+                    </div>
+                    
+
+                    </div>
+                </div>
+                    
+
+
+            <div class="content-container">
+            </p> {{content}} </p>
+            </div>
+
+            </div>
+            <div class="panel-footer">          
+            </div>
+        </div>
+    {% endfor %}
+
+</div>

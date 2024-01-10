@@ -3,12 +3,14 @@
 from flask import Flask, render_template, request
 from flask_user import login_required, UserManager, current_user
 from sqlalchemy import func, desc, delete, select
-from models import db, User, Movie, MovieGenre, MovieRating, MovieTag, WatchList
+from models import *
+from helper_functions import *
 from read_data import check_and_read_data, get_tmdb_data_for_movie
 import time
 import numpy as np
 from lenskit.datasets import ML100K
 import pandas as pd
+import random
 
 from lenskit.algorithms.basic import UnratedItemCandidateSelector
 
@@ -84,9 +86,16 @@ def movies_page():
     #     .filter(Movie.genres.any(MovieGenre.genre == 'Romance')) \
     #     .filter(Movie.genres.any(MovieGenre.genre == 'Horror')) \
     #     .limit(10).all()
+    
+    # DEFAULT -- 10 best rated movies with random genre 
+    genre_list = genre_list = ['Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy', 'Film-Noir', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western', 'Other']
+    #movies = filter_best([], random.choice(genre_list), 10, db, include=False, user_id=current_user.id)
+    print("BUILD MODEL")
+    movies, scores = build_recommender(genre=[random.choice(genre_list)], tag=None, algo="Best rated movies", number=10, user_id="off", include="", db=db)
+    print("prepare")
 
 
-    return render_movies_template(movies, "movies.html")
+    return render_movies_template(movies, "movies.html", scores=scores)
 
 
 # The Members page is only accessible to authenticated users via the @login_required decorator
@@ -94,30 +103,73 @@ def movies_page():
 @login_required  # User must be authenticated
 def recommendations_page():
 
-    query = MovieRating.query.filter(MovieRating.user_id==current_user.id, MovieRating.timestamp>timestamp_of_last_model_fit)
+    # query = MovieRating.query.filter(MovieRating.user_id==current_user.id, MovieRating.timestamp>timestamp_of_last_model_fit)
 
-    if query.all():
-        print(query.all())
-        new_ratings = pd.read_sql(query.statement, con=db.get_engine().connect(), index_col=None)
-        new_ratings = new_ratings.rename(columns={"user_id":"user", "movie_id":"item"})
-        print(new_ratings)
-        print("after \n")
-        new_ratings = new_ratings.set_index('item')['rating']
-        print(new_ratings)
+    # if query.all():
+    #     print(query.all())
+    #     new_ratings = pd.read_sql(query.statement, con=db.get_engine().connect(), index_col=None)
+    #     new_ratings = new_ratings.rename(columns={"user_id":"user", "movie_id":"item"})
+    #     print(new_ratings)
+    #     print("after \n")
+    #     new_ratings = new_ratings.set_index('item')['rating']
+    #     print(new_ratings)
 
-        recs = algo.recommend(user=current_user.id, n=10, ratings=new_ratings)
-    else:
-        print("!!! No new ratings !!!")
-        recs = algo.recommend(user=current_user.id, n=10)
-    print("recommendations:", recs)
+    #     recs = algo.recommend(user=current_user.id, n=10, ratings=new_ratings)
+    # else:
+    #     print("!!! No new ratings !!!")
+    #     recs = algo.recommend(user=current_user.id, n=10)
+    # print("recommendations:", recs)
 
-    q = []
-    for m in recs['item']:
-        m = int(m)
-        movie = Movie.query.get(m)
-        q.append(movie)
+    """ Recommendation functionality """
 
-    return render_movies_template(q, "movies.html")
+    if request.method == 'POST':
+        
+        # GET filter options 
+        user_id = request.form.get('user_id')
+        tag = request.form.get('tag')
+        genre = request.form.get('genre')
+        number = request.form.get('number')
+        algorithm = request.form.get('algorithm')
+        include = request.form.get('include')
+        title = request.form.get('title')
+
+        # ADAPT values to python 
+        filter_options = [genre, tag]
+
+        for i in range(0, len(filter_options)): 
+
+            # Nothing 
+            if filter_options[i] == "0": 
+                filter_options[i]= []
+
+            # Several
+            elif ',' in filter_options[i]: 
+                filter_options[i] = filter_options[i].split(',')
+
+            # Single  
+            else: 
+               filter_options[i] = [ filter_options[i] ]
+
+
+        # EXCEPTIONS 
+        if number == "0": 
+            number = 10
+
+        if genre == "other": 
+            filter_options[0] = "(no genres listed)"
+
+        
+        # BUILD model  
+        movies, normalized_scores = build_recommender(genre=filter_options[0], tag=filter_options[1], algo=algorithm, number= int(number), include=include, db=db, user_id=int(user_id))  
+
+
+    # q = []
+    # for m in recs['item']:
+    #     m = int(m)
+    #     movie = Movie.query.get(m)
+    #     q.append(movie)
+
+    return render_movies_template(q,  "movies.html", scores=normalized_scores)
 
     
 
@@ -303,7 +355,7 @@ def get_recommendations_movies(number_to_recommend=10):
     movie_ids = [movie_id for movie_id in recs['item']]
     return movie_ids
 
-def render_movies_template(movies, template):
+def render_movies_template(movies, template, scores=None):
     movie_ids = [movie.id for movie in movies]
     avg = MovieRating.query.order_by(MovieRating.movie_id).group_by(MovieRating.movie_id).with_entities(func.avg(MovieRating.rating)).filter(MovieRating.movie_id.in_(movie_ids)).all()
     movie_ids.sort()
@@ -316,6 +368,12 @@ def render_movies_template(movies, template):
     watchlisted = []
     average_ratings_sorted = []
     movie_ids = []
+    
+    if not scores:
+        probabilities = predict_rating(movie_ids, current_user.id, get_user_ratings(current_user.id))
+    else:
+        probabilities = scores
+
     for movie in movies:
         tags = np.array([t.tag for t in movie.tags])
         tags, counts = np.unique(tags, return_counts=True)
@@ -328,12 +386,18 @@ def render_movies_template(movies, template):
         watchlisted.append(on_watchlist)
         average_ratings_sorted.append('{0:.2f}'.format(average_ratings[str(movie.id)]))
         movie_ids.append(movie.id)
+
         try:
             ratings.append(rating.rating)
         except AttributeError:
             ratings.append(None)    
 
-    return render_template(template, movies_and_tags=zip(movies, all_tags, ratings, watchlisted, average_ratings_sorted), genres=db.session.query(MovieGenre.genre).distinct(), tags=db.session.query(MovieTag.tag).distinct(), movie_ids=movie_ids)
+    tag_list = create_tag_list()
+    genre_list = ['Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy', 'Film-Noir', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western', 'Other']
+    item_list = zip([title.title for title in Movie.query.all()], [d.content for d in Movie.query.all()])
+    
+
+    return render_template(template, movies_and_tags=zip(movies, all_tags, ratings, watchlisted, average_ratings_sorted, probabilities), genres=db.session.query(MovieGenre.genre).distinct(), tags=db.session.query(MovieTag.tag).distinct(), movie_ids=movie_ids, tag_list=tag_list, genre_list=genre_list, item_list=item_list)
 
 
 

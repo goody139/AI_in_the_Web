@@ -32,8 +32,8 @@ class Movie(db.Model):
     genres = db.relationship('MovieGenre', backref='movie', lazy=True)
     links = db.relationship('MovieLinks', backref='movie', lazy=True)
     tags = db.relationship('MovieTag', backref='movie', lazy=True)
-
-
+    reviews = db.relationship('MovieReview', backref='movie', lazy=True)
+   
 class MovieGenre(db.Model):
     __tablename__ = 'movie_genres'
     id = db.Column(db.Integer, primary_key=True)
@@ -69,3 +69,12 @@ class WatchList(db.Model):
     movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), nullable=False, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, primary_key=True)
     timestamp = db.Column(db.Integer, nullable=False)
+
+
+class MovieReview(db.Model):
+    __tablename__ = 'movie_reviews'
+    id = db.Column(db.Integer, primary_key=True)
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    review = db.Column(db.String(2048), nullable=False, server_default='')
+

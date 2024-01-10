@@ -4,46 +4,91 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 
-<div class="container filter-container">
-    <div class="select-container">
-        <div class="select-wrapper">
-            <label class="select-label" for="select">Filter genres</label>
-            <select id="genres" name="genres" multiple size="4">
-                {% for g in genres %}
-                    <option value="{{ g[0] }}">{{ g[0] }}</option>
-                {% endfor %}
+<div id="filterView"></div>
+
+<br> 
+<br>
+
+<div class="dropdown">
+    <button onclick="toggleDropdown('Tag')" class="dropbtn">Tags</button>
+    <div id="myDropdownTag" class="dropdown-content">
+        <input type="text" placeholder="Search.." id="myInputTag" onkeyup="filterFunction('Tag')">
+        
+
+            <select multiple id="TagDropdown" class="Selector">
+            {% for tag in tag_list %}
+                    <option name="selected_Tag" value="{{ tag }}"> {{ tag }} </option>
+            {% endfor %}
             </select>
-            <div>
-                <input type="checkbox" id="apply_all_genres" name="apply_all_genres" checked />
-                <label for="apply_all_genres">Only filter movies matching all selected genres</label>
-            </div>
-        </div>
-
-
-
-        <div class="select-wrapper">
-            <label class="select-label" for="select">Filter tags</label>
-            <select id="tags" name="tags" multiple size="4">
-                {% for t in tags %}
-                    <option value="{{ t[0] }}">{{ t[0] }}</option>
-                {% endfor %}
-            </select>
-            <div>
-                <input type="checkbox" id="apply_all_tag" name="apply_all_tags" checked />
-                <label for="apply_all_tags">Only filter movies matching all selected tags</label>
-            </div>
-        </div>
-    </div><!-- select-container -->
-
-    <div style="clear:both"></div>
-
-    <input type="checkbox" id="apply_genres_and_tags" name="apply_genres_and_tags" checked />
-    <label for="apply_genres_and_tags">Only filter movies matching genres and tags</label>
-
-    <button id="filter_form" type="button">
-        <span id="filter_text" role="status">Apply filters</span>
-    </button>
+    </div>
 </div>
+
+<div class="dropdown">
+    <button onclick="toggleDropdown('Genre')" class="dropbtn">Genre</button>
+    <div id="myDropdownGenre" class="dropdown-content">
+        <input type="text" placeholder="Search.." id="myInputGenre" onkeyup="filterFunction('Genre')">
+
+            <select id="GenreDropdown" class="Selector" multiple>
+            {% for genre in genre_list %}
+                    <option name="selected_Genre" value="{{ genre }}"> {{ genre }} </option>
+            {% endfor %}
+            </select>
+    </div>
+</div>
+
+<div class="dropdown">
+    <button onclick="toggleDropdown('NrRec')" class="dropbtn">How many?</button>
+    <div id="myDropdownNrRec" class="dropdown-content">
+
+            <select id="NrRecDropdown" multiple class="Selector">
+            {% for i in range(1,31) %}
+                    <option name="selected_NrRec" value="{{ i }}"> {{ i }} </option>
+            {% endfor %}
+            </select>
+    </div>
+</div>
+
+<div class="dropdown">
+    <button onclick="toggleDropdown('Algorithm')" class="dropbtn">Recommendation</button>
+    <div id="myDropdownAlgorithm" class="dropdown-content">
+        <input type="text" placeholder="Search.." id="myInputAlgorithm" onkeyup="filterFunction('Algorithm')">
+
+            <select id="AlgorithmDropdown" class="Selector" multiple>
+            {% set algorithm = ["Other Users also liked","Similar to other movies you've watched", "Best rated movies" ] %}
+            {% for i in algorithm %}
+                    <option name="selected_Algorithm" value="{{ i }}"> {{ i }}</option>
+            {% endfor %}
+            </select>
+    </div>
+</div>
+
+<div class="dropdown">
+    <button onclick="toggleDropdown('Title')" class="dropbtn">Specific title?</button>
+    <div id="myDropdownTitle" class="dropdown-content">
+        <input type="text" placeholder="Search.." id="myInputTitle" onkeyup="filterFunction('Title')">
+
+
+            <select multiple id="TitleDropdown" class="Selector">
+            {% for t, d in item_list %}
+                    <option name="selected_Title" value="{{ t }}" data-description="{{d}}"> {{ t }}</option>
+            {% endfor %}
+            </select>
+
+    </div>
+</div>
+
+<div class="toggle">
+    <label> Include rated movies
+        <input type="checkbox" name="include"> <span class="slider"></span> </label>
+</div>
+
+<br> 
+<br> 
+
+<button onclick="ApplyFilter('{{user_id}}')">Apply filter options</button>
+
+
+
 
 <div class="container sort-container">
     <div id="sort_mode_container">
@@ -64,7 +109,7 @@
   
 
 <div id="movie_list" class="container">
-    {% for m,tags,rating,watchlisted,avg_rating in movies_and_tags %}
+    {% for m,tags,rating,watchlisted,avg_rating,probabilities in movies_and_tags %}
         <div class="panel">
             
             <div class="panel-heading">
@@ -76,6 +121,7 @@
                     {% endif %}
                 </div>
                 <div class="panel-title pull-left"><b>{{ m.title }}</b></div>
+                <div class="match-probability">With a probability of {{probability}} % u like the movie</div>
 
                 {% for l in m.links %}
                     <div class="db-links pull-right">
@@ -115,6 +161,21 @@
                     <p>
                         <b>Runtime: {{ m.runtime }} minutes</b>
                     </p>
+
+                    <div class="review-container">
+                        <div class="review-header"> Reviews</div>
+                        
+                        <div class="picture-text">
+                            {% for r in reviews %}
+                            <div class="review-container"> 
+                                
+                                <p><b>{{r}}</b></p>
+                                
+                            </div> <!-- review-container -->
+                            {% endfor %}
+                        </div> <!-- picture-text -->
+
+                    </div> <!-- review-container -->
 
                 </div> <!-- movie-information -->       
             </div> <!-- panel-body -->
@@ -256,7 +317,216 @@
             parent.insertBefore(parent.childNodes[i], parent.firstChild);
         }
     }
+
+    function updateFilterView() {
+        console.log("filterview function")
+        var filterView = document.getElementById('filterView');
+        filterView.innerHTML = ''; // Cle8ar previous content
     
+        Object.keys(selectedOptions).forEach(function (category) {
+    
+            var values = selectedOptions[category];
+            console.log("the values" + values)
+    
+            values.forEach(function (value) {
+                var filterOption = document.createElement('div');
+                filterOption.className = 'filterOption';
+                filterOption.textContent = value;
+                filterOption.name = category; 
+                filterView.appendChild(filterOption);
+                filterOption.onclick = function() {
+                    // Handle selection of options 
+                    var name = this.name; 
+                    var value = this.textContent;
+    
+                    // Handle FilterView 
+                    option = document.querySelector('option[value="'+value+'"][name="selected_'+name+'"]');  
+                    option.selected = !option.selected;
+                    this.remove();
+                    list = selectedOptions[category]
+                    if (list.includes(value)){
+                        list.splice(list.indexOf(value),1)
+                    }
+    
+                };
+            });
+        });
+    }
+    
+    function getSelectedValues(selectId) {
+        var selectedOptions = document.getElementById(selectId).selectedOptions;
+        var values = [];
+
+        for (var i = 0; i < selectedOptions.length; i++) {
+            values.push(selectedOptions[i].value);
+        }
+
+        return values;
+    }
+    
+    function toggleDropdown(category) {
+        document.getElementById("myDropdown"+category).classList.toggle("show");
+    }
+
+    function filterFunction(category) {
+        var input, filter, div, optionList, i;
+        //console.log("myInput"+category);
+        input = document.getElementById("myInput"+category);
+        filter = input.value.toUpperCase();
+        div = document.getElementById("myDropdown"+category);
+        optionList = div.getElementsByTagName("option");
+        var matchedElements = [];
+
+        for (i = 0; i < optionList.length; i++) {
+            var txtValue = optionList[i].textContent || optionList[i].innerText;
+
+            if (category == 'Title'){
+                var description = optionList[i].dataset.description;
+
+                if (txtValue.toUpperCase().indexOf(filter) > -1 || description.toUpperCase().indexOf(filter) > -1) {
+                    optionList[i].style.display = "";
+                    matchedElements.push(optionList[i]);
+                } else {
+                    optionList[i].style.display = "none";
+                }
+
+            }
+
+            else {
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    console.log("other")
+                    optionList[i].style.display = "";
+                    matchedElements.push(optionList[i]); 
+                } else {
+                    optionList[i].style.display = "none";
+                }
+            }
+        }
+
+    }   
+    
+    function getSelectedValue(selector) {
+        var selectedOptions = document.querySelectorAll(selector + ':checked');
+        var values = [];
+    
+    
+        if (selectedOptions.length == 0) {
+            console.log("empty option")
+            return '0';
+        }
+        // Check if a checked option exists
+        else {
+            selectedOptions.forEach(function (option) {
+                values.push(option.value);
+            });
+            
+            console.log(values)
+            return values;
+        } 
+    
+    }
+
+    function ApplyFilter(user_id){
+        // code sowas wie wenn null oder mit if nacch checked suchen 
+        console.debug("FILTER BUTTON PRESSED")
+
+        var tag = getSelectedValue('option[name="selected_Tag"]');
+        var genre = getSelectedValue('option[name="selected_Genre"]');
+        var number = getSelectedValue('option[name="selected_NrRec"]');
+        var algorithm = getSelectedValue('option[name="selected_Algorithm"]');
+        var include = getSelectedValue('input[name="include"]');
+        var allFilters = getSelectedValue('option[name="all_filters"]');
+        
+        // selected options der titel in dem moment speichern zu der liste in der gesucht wird 
+        // das sind dann nicht selected ones, sondern müssen die sein, die gefiltert werden in dem Moment 
+        // wie löschen (mehrere items) wenn option weggeklickt wird dictionary? item keys konstrukt 
+        var title = selectedOptions["Title"]
+
+        console.debug("GET VALUES")
+        console.debug(tag, genre, number, algorithm, title, include, allFilters)
+
+
+        // Use Fetch to asynchronously send the rating to the server
+        fetch('/filter', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'user_id=' + user_id + '&tag=' + tag + '&genre=' + genre + '&number=' + number + '&algorithm=' + algorithm + "&include=" + include + "&title=" + title,
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(data => {
+            document.getElementById('container').innerHTML = data;
+            console.log(data); // Process the server response here
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+    }
+
+
+    // Attach event listeners for each category
+    var categories = ["Title", "Tag", "Genre", "NrRec", "Algorithm"];
+    categories.forEach(function (category) {
+        var selectId = category + 'Dropdown';
+        selectedOptions[category] = getSelectedValues(selectId);
+
+        var categoryDropdown = document.getElementById(category + 'Dropdown');
+
+        document.getElementById(selectId).addEventListener('change', function () {
+            selectedOptions[category] = getSelectedValues(selectId);
+            updateFilterView();
+        });
+
+        categoryDropdown.addEventListener('mousedown', function (event) {
+            event.preventDefault();
+            updateFilterView();
+
+            var originalScrollTop = this.scrollTop;
+            
+            if (category == "NrRec" || category == "Algorithm"){
+                limit_number = 0;
+            } 
+
+            else{
+                limit_number = 2; 
+            }
+            
+            // if option is clicked make it unselected
+            if (event.target.selected == true){
+                event.target.selected = !event.target.selected;
+                selectedOptions[category] = getSelectedValues(selectId);
+            }
+
+            // if option is unselected ... 
+            else if (event.target.selected == false){
+                if (selectedOptions[category].length <= limit_number ){
+                    event.target.selected = !event.target.selected;
+                    selectedOptions[category] = getSelectedValues(selectId);
+                }
+            };
+
+            setTimeout(() => {
+                this.scrollTop = originalScrollTop;
+            }, 0);
+
+            this.focus();
+            updateFilterView();
+    });
+
+        categoryDropdown.addEventListener('mousemove', function (event) {
+            event.preventDefault();
+        });
+    });
+
+    // Initial update
+    updateFilterView();
+
     // pass the ids of the shown movies to pass to called functions for sorting
     var movie_ids = {{ movie_ids|safe }};
 
@@ -273,6 +543,27 @@
         links[i].addEventListener('click', changeWatchlist);
     }
 
+    var searchBar = document.getElementById('myInputTitle');
+
+    var selectedOptions = {};
+    
+    
+    // Event-Listener hinzufügen
+    searchBar.addEventListener('keyup', function (event) {
+      
+      // input in filterview einfügen 
+      if (event.keyCode === 13) {
+        if(! selectedOptions["Title"].includes(searchBar.value) && selectedOptions["Title"].length <= 2){
+        selectedOptions["Title"].push(searchBar.value)
+        }
+      }
+    
+      // wie damit umgehen? in update filter view wird nicht gespeichert, da nicht selected ist boolean? wenn 
+      // geklickt wird?!
+      // in dem moment für recommender speichern, welche optionen noch eingeblendet sind (durch suche )
+      console.log(document.getElementById('TitleDropdown'))
+      updateFilterView();
+    });
     
     const sort_checkbox = document.getElementById("sort_mode");
     const sort_label = document.getElementById("sort_mode_label");
@@ -351,59 +642,59 @@
     });
 
     
-    document.getElementById('filter_form').addEventListener("click", function() {
-        event.preventDefault(); // Prevent the default anchor action
-        this.disabled = true;
-        this.style.color = "#1e1e1e"
-        filter_text.textContent = "Filtering...";
+    // document.getElementById('filter_form').addEventListener("click", function() {
+    //     event.preventDefault(); // Prevent the default anchor action
+    //     this.disabled = true;
+    //     this.style.color = "#1e1e1e"
+    //     filter_text.textContent = "Filtering...";
 
-        var v = document.getElementById("genres").selectedOptions;
-        var genres = Array.from(v).map(({ value }) => value);
-        var v = document.getElementById('tags').selectedOptions;
-        var tags = Array.from(v).map(({ value }) => value);
-        var elem = this;
+    //     var v = document.getElementById("genres").selectedOptions;
+    //     var genres = Array.from(v).map(({ value }) => value);
+    //     var v = document.getElementById('tags').selectedOptions;
+    //     var tags = Array.from(v).map(({ value }) => value);
+    //     var elem = this;
 
-        // Create an AJAX request
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/filter', true);
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    //     // Create an AJAX request
+    //     var xhr = new XMLHttpRequest();
+    //     xhr.open('POST', '/filter', true);
+    //     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
-        // Handle the response
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                elem.disabled = false;
-                elem.style.color = "black"
-                filter_text.textContent = "Apply filters";
-                window.history.pushState('page2', 'Title', window.location.pathname + '?genres=' + genres + '&tags=' + tags);
+    //     // Handle the response
+    //     xhr.onload = function() {
+    //         if (xhr.status === 200) {
+    //             elem.disabled = false;
+    //             elem.style.color = "black"
+    //             filter_text.textContent = "Apply filters";
+    //             window.history.pushState('page2', 'Title', window.location.pathname + '?genres=' + genres + '&tags=' + tags);
                 
-                setInnerHTML(movie_list, xhr.responseText);
-                // movie_list.innerHTML = xhr.responseText;
-                movie_list = document.getElementById("movie_list");
+    //             setInnerHTML(movie_list, xhr.responseText);
+    //             // movie_list.innerHTML = xhr.responseText;
+    //             movie_list = document.getElementById("movie_list");
                 
                 
-            } else {
-                alert('Request failed. Returned status of ' + xhr.status);
-                elem.disabled = false;
-                elem.style.color = "black"
-                filter_text.textContent = "Apply filters";
-            }
-        };
+    //         } else {
+    //             alert('Request failed. Returned status of ' + xhr.status);
+    //             elem.disabled = false;
+    //             elem.style.color = "black"
+    //             filter_text.textContent = "Apply filters";
+    //         }
+    //     };
 
 
-        var request_parameters = 'type=' + window.location.pathname
+    //     var request_parameters = 'type=' + window.location.pathname
 
-        if (genres.length > 0) {
-            request_parameters += '&genres=' + genres
-        }
+    //     if (genres.length > 0) {
+    //         request_parameters += '&genres=' + genres
+    //     }
 
-        if (tags.length > 0) {
-            request_parameters += '&tags=' + tags
-        }
+    //     if (tags.length > 0) {
+    //         request_parameters += '&tags=' + tags
+    //     }
 
-        // Send the request with the parameters
-        xhr.send(request_parameters);
+    //     // Send the request with the parameters
+    //     xhr.send(request_parameters);
         
-    });
+    // });
         
 
 

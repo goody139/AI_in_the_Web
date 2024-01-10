@@ -1,6 +1,6 @@
 import csv
 from sqlalchemy.exc import IntegrityError
-from models import Movie, MovieGenre, MovieLinks, MovieTag, MovieRating
+from models import *
 import requests
 from time import sleep
 from datetime import date
@@ -11,16 +11,18 @@ def get_tmdb_data_for_movie(tmdb_id, apikey_path="secrets/tmdb_api.txt"):
     with open(apikey_path, "r") as file:
         api_key = file.read()
     # request data for the movie
-    response = requests.get("https://api.themoviedb.org/3/movie/{}?api_key={}".format(tmdb_id, api_key))
+    response = requests.get("https://api.themoviedb.org/3/movie/{}?api_key={}&append_to_response=videos,reviews".format(tmdb_id, api_key))
     while response.status_code == 429:
         sleep(1)
-        response = requests.get("https://api.themoviedb.org/3/movie/{}?api_key={}".format(tmdb_id, api_key))
+        response = requests.get("https://api.themoviedb.org/3/movie/{}?api_key={}&append_to_response=videos,reviews".format(tmdb_id, api_key))
     return response
 
 
 def check_and_read_data(db):
     # check if we have movies in the database
     # read data if database is empty
+    
+    # MOVIES 
     if Movie.query.count() == 0:
         # read movies from csv
         with open('data/movies.csv', newline='', encoding='utf8') as csvfile:
@@ -46,7 +48,7 @@ def check_and_read_data(db):
                 if count % 100 == 0:
                     print(count, " movies read")
 
-
+    # LINKS
     # check if we have links in the database
     # read data if database is empty
     if MovieLinks.query.count() == 0:
@@ -90,6 +92,22 @@ def check_and_read_data(db):
                         except KeyError:
                             pass
 
+                        # [TODO] create rating objects and add them to the database
+                        # try:
+                        #     if r.json()['reviews']:
+                        #         data = response.json()
+                        #         review = data.get('results', [])
+                        #         reviews = []
+                        #         if review == []: 
+                        #             reviews.append(review) 
+
+                        #         else: 
+                        #             review = review[0].get('content', [])
+                        #             reviews.append(review.split('\r\n\r\n') )
+
+                        # except KeyError:
+                        #     pass
+
                         db.session.add(movie_links)
                         db.session.commit()  # save data to database
                     except IntegrityError:
@@ -101,7 +119,7 @@ def check_and_read_data(db):
                     print(count, " movie links read")
 
 
-
+    # TAGS
     # check if we have tags in the database
     # read data if database is empty
     if MovieTag.query.count() == 0:
@@ -122,7 +140,7 @@ def check_and_read_data(db):
                 if count % 100 == 0:
                     print(count, " tags read")
 
-
+    # RATINGS
     # check if we have ratings in the database
     # read data if database is empty
     if MovieRating.query.count() == 0:

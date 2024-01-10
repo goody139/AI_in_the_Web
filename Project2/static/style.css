@@ -221,3 +221,219 @@ button {
     border-radius: 5px;
     border-color: #d9bffa;
 }
+
+
+
+<style>
+/* Stil für das select-Element */
+#filterView {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+.filterOption {
+        padding: 5px 10px;
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        cursor: pointer;
+}
+
+.toggle{
+  position: absolute;
+  top: 95px; /* Abstand vom oberen Rand */
+  right: -70px; /* Abstand vom rechten Rand */
+  z-index: 999;
+}
+
+.toggle + .toggle {
+  margin-right: 175px;
+}
+.toggle label {
+  position: relative;
+  display: inline-block;
+  width: 15em;
+  height: 3.5em;
+}
+
+.toggle input {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+ 
+.toggle .slider { /* Grundfläche */
+  position: absolute;
+  cursor: pointer;
+  top: 1.5em; 
+  left: 3em;
+  width: 4em;
+  height: 2em;
+  background-color: #c32e04; 
+  border-radius: 1em; 
+  transition: all .3s ease-in-out;
+}
+ 
+.toggle  .slider::before {  /* verschiebbarer Button */
+  position: absolute;
+  content: "";
+  height: 1.6em;
+  width: 1.6em;
+  left: .2em;
+  bottom: .2em;
+  background-color: white;
+  border-radius: 50%;
+  transition: all .3s ease-in-out;
+}
+
+.toggle input:checked + .slider {
+  background-color: #5a9900; 
+}
+ 
+.toggle  input:checked + .slider::before {
+  transform: translateX(1.9em);
+}
+ /* Dropdown Button */
+ .dropbtn {
+  background-color: #04AA6D;
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+/* Dropdown button on hover & focus */
+.dropbtn:hover, .dropbtn:focus {
+  background-color: #3e8e41;
+}
+
+/* The search field */
+#myInput {
+  box-sizing: border-box;
+  background-image: url('searchicon.png');
+  background-position: 10px 10px;
+  background-repeat: no-repeat;
+  font-size: 16px;
+  padding: 14px 20px 12px 45px;
+  border: none;
+  border-bottom: 1px solid #ddd;
+  width: 100px;
+}
+
+/* The search field when it gets focus/clicked on */
+#myInput:focus {outline: 3px solid #ddd;}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+  position: relative;
+  display: inline-block;
+  margin-right: 75px; 
+  width : fit-content;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f6f6f6;
+  width: fit-content;
+  border: 1px solid #ddd;
+  z-index: 1;
+}
+
+.select{
+    width: fit-content; /* Setze die Breite nach Bedarf */
+    white-space: normal;
+}
+.selector{
+    scrollbar-width: thin;
+    width: fit-content; /* Setze die Breite nach Bedarf */
+    white-space: normal;
+
+}
+
+.dropdown-content>select{
+    width:fit-content;;
+}
+.dropdown-content> select > option:checked {
+            color: grey;
+        }
+
+/* Links inside the dropdown */
+.dropdown-content > select > option {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  width: fit-content;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content option:hover {background-color: #f1f1f1}
+
+
+.show {display:block;} 
+
+
+.picture-container {
+            display: flex;
+            align-items: left;
+        }
+
+.picture-image {
+            max-width: 400px; /* oder eine andere maximale Breite, die deinem Layout entspricht */
+            margin-right: 40px; /* Abstand zwischen Bild und Text */
+            margin-left: 20px;
+        }
+
+.picture-text {
+            max-width: 500px;
+            padding: 20px;
+            height: 200px; /* Höhe des Inhalts anpassen, um das Scrollen zu ermöglichen */ /* oder eine andere maximale Breite, die deinem Layout entspricht */
+            color: white;
+            overflow-y: auto;
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: darkgray lightgray; 
+        }
+
+.review-container {
+            background-color: #588bba;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width : 200 px
+        }
+
+.content-container {
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        
+
+        .review-header {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .review-content {
+            line-height: 1.6;
+        }
+
+
+label{
+    grid-column: 1 / 2;
+}
+
+label ::before{
+    grid-column: 1 / 2;
+}
