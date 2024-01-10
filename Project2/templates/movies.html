@@ -1,0 +1,725 @@
+<style>
+/* Stil für das select-Element */
+#filterView {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+.filterOption {
+        padding: 5px 10px;
+        background-color: #f0f0f0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        cursor: pointer;
+}
+
+.toggle{
+  position: absolute;
+  top: 95px; /* Abstand vom oberen Rand */
+  right: -70px; /* Abstand vom rechten Rand */
+  z-index: 999;
+}
+
+.toggle + .toggle {
+  margin-right: 175px;
+}
+.toggle label {
+  position: relative;
+  display: inline-block;
+  width: 15em;
+  height: 3.5em;
+}
+
+.toggle input {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+ 
+.toggle .slider { /* Grundfläche */
+  position: absolute;
+  cursor: pointer;
+  top: 1.5em; 
+  left: 3em;
+  width: 4em;
+  height: 2em;
+  background-color: #c32e04; 
+  border-radius: 1em; 
+  transition: all .3s ease-in-out;
+}
+ 
+.toggle  .slider::before {  /* verschiebbarer Button */
+  position: absolute;
+  content: "";
+  height: 1.6em;
+  width: 1.6em;
+  left: .2em;
+  bottom: .2em;
+  background-color: white;
+  border-radius: 50%;
+  transition: all .3s ease-in-out;
+}
+
+.toggle input:checked + .slider {
+  background-color: #5a9900; 
+}
+ 
+.toggle  input:checked + .slider::before {
+  transform: translateX(1.9em);
+}
+ /* Dropdown Button */
+ .dropbtn {
+  background-color: #04AA6D;
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+/* Dropdown button on hover & focus */
+.dropbtn:hover, .dropbtn:focus {
+  background-color: #3e8e41;
+}
+
+/* The search field */
+#myInput {
+  box-sizing: border-box;
+  background-image: url('searchicon.png');
+  background-position: 10px 10px;
+  background-repeat: no-repeat;
+  font-size: 16px;
+  padding: 14px 20px 12px 45px;
+  border: none;
+  border-bottom: 1px solid #ddd;
+  width: 100px;
+}
+
+/* The search field when it gets focus/clicked on */
+#myInput:focus {outline: 3px solid #ddd;}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+  position: relative;
+  display: inline-block;
+  margin-right: 75px; 
+  width : fit-content;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f6f6f6;
+  width: fit-content;
+  border: 1px solid #ddd;
+  z-index: 1;
+}
+
+.select{
+    width: fit-content; /* Setze die Breite nach Bedarf */
+    white-space: normal;
+}
+.selector{
+    scrollbar-width: thin;
+    width: fit-content; /* Setze die Breite nach Bedarf */
+    white-space: normal;
+
+}
+
+.dropdown-content>select{
+    width:fit-content;;
+}
+.dropdown-content> select > option:checked {
+            color: grey;
+        }
+
+/* Links inside the dropdown */
+.dropdown-content > select > option {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  width: fit-content;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content option:hover {background-color: #f1f1f1}
+
+
+.show {display:block;} 
+
+
+.picture-container {
+            display: flex;
+            align-items: left;
+        }
+
+.picture-image {
+            max-width: 400px; /* oder eine andere maximale Breite, die deinem Layout entspricht */
+            margin-right: 40px; /* Abstand zwischen Bild und Text */
+            margin-left: 20px;
+        }
+
+.picture-text {
+            max-width: 500px;
+            padding: 20px;
+            height: 200px; /* Höhe des Inhalts anpassen, um das Scrollen zu ermöglichen */ /* oder eine andere maximale Breite, die deinem Layout entspricht */
+            color: white;
+            overflow-y: auto;
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: darkgray lightgray; 
+        }
+
+.review-container {
+            background-color: #588bba;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width : 200 px
+        }
+
+.content-container {
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        
+
+        .review-header {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .review-content {
+            line-height: 1.6;
+        }
+
+
+.like-area {
+        float: left;
+        border-style: none;
+    }
+    
+    .like-area:not(:checked) > input {
+        position: fixed;
+        top: -9999px;
+        clip: rect(0, 0, 0, 0);
+    }
+    
+    .like-area:not(:checked) > label {
+        float: right;
+        width: 0.8em;
+        overflow: hidden;
+        white-space: nowrap;
+        cursor: pointer;
+        font-size: 180%;
+        color: lightgrey;
+    }
+    
+    .like-area:not(:checked) > label:before {
+        content:"♥";
+    }
+    
+    .like-area > input:checked ~ label {
+        color: red;
+    }
+    
+    .like-area:not(:checked) > label:hover,
+    .like-area:not(:checked) > label:hover ~ label {
+        color: red;
+    }
+    
+    .like-area > input:checked + label:hover,
+    .like-area > input:checked + label:hover ~ label,
+    .like-area > input:checked ~ label:hover,
+    .like-area > input:checked ~ label:hover ~ label,
+    .like-area > label:hover ~ input:checked ~ label {
+        color: red;
+    }
+label{
+    grid-column: 1 / 2;
+}
+
+label ::before{
+    grid-column: 1 / 2;
+}
+
+.rate-area {
+        float: left;
+        border-style: none;
+}
+    
+.rate-area:not(:checked) > input {
+        position: fixed;
+        top: -9999px;
+        clip: rect(0, 0, 0, 0);
+}
+    
+.rate-area:not(:checked) > label {
+        float: right;
+        width: 0.8em;
+        overflow: hidden;
+        white-space: nowrap;
+        cursor: pointer;
+        font-size: 180%;
+        color: lightgrey;
+}
+    
+.rate-area:not(:checked) > label:before {
+        content: "★";
+}
+    
+.rate-area > input:checked ~ label {
+        color: gold;
+}
+    
+.rate-area:not(:checked) > label:hover,
+.rate-area:not(:checked) > label:hover ~ label {
+        color: gold;
+}
+    
+.rate-area > input:checked + label:hover,
+.rate-area > input:checked + label:hover ~ label,
+.rate-area > input:checked ~ label:hover,
+.rate-area > input:checked ~ label:hover ~ label,
+.rate-area > label:hover ~ input:checked ~ label {
+        color: gold;
+}
+    
+</style>
+
+{% extends "flask_user_layout.html" %}
+{% block content %}
+
+<div id="filterView"></div>
+
+<br> 
+<br>
+
+<div class="dropdown">
+    <button onclick="toggleDropdown('Tag')" class="dropbtn">Tags</button>
+    <div id="myDropdownTag" class="dropdown-content">
+        <input type="text" placeholder="Search.." id="myInputTag" onkeyup="filterFunction('Tag')">
+        
+
+            <select multiple id="TagDropdown" class="Selector">
+            {% for tag in tag_list %}
+                    <option name="selected_Tag" value="{{ tag }}"> {{ tag }} </option>
+            {% endfor %}
+            </select>
+    </div>
+</div>
+
+<div class="dropdown">
+    <button onclick="toggleDropdown('Genre')" class="dropbtn">Genre</button>
+    <div id="myDropdownGenre" class="dropdown-content">
+        <input type="text" placeholder="Search.." id="myInputGenre" onkeyup="filterFunction('Genre')">
+
+            <select id="GenreDropdown" class="Selector" multiple>
+            {% for genre in genre_list %}
+                    <option name="selected_Genre" value="{{ genre }}"> {{ genre }} </option>
+            {% endfor %}
+            </select>
+    </div>
+</div>
+
+<div class="dropdown">
+    <button onclick="toggleDropdown('NrRec')" class="dropbtn">How many?</button>
+    <div id="myDropdownNrRec" class="dropdown-content">
+
+            <select id="NrRecDropdown" multiple class="Selector">
+            {% for i in range(1,31) %}
+                    <option name="selected_NrRec" value="{{ i }}"> {{ i }} </option>
+            {% endfor %}
+            </select>
+    </div>
+</div>
+
+<div class="dropdown">
+    <button onclick="toggleDropdown('Algorithm')" class="dropbtn">Recommendation</button>
+    <div id="myDropdownAlgorithm" class="dropdown-content">
+        <input type="text" placeholder="Search.." id="myInputAlgorithm" onkeyup="filterFunction('Algorithm')">
+
+            <select id="AlgorithmDropdown" class="Selector" multiple>
+            {% set algorithm = ["Other Users also liked","Similar to other movies you've watched", "Best rated movies" ] %}
+            {% for i in algorithm %}
+                    <option name="selected_Algorithm" value="{{ i }}"> {{ i }}</option>
+            {% endfor %}
+            </select>
+    </div>
+</div>
+
+<div class="dropdown">
+    <button onclick="toggleDropdown('Title')" class="dropbtn">Specific title?</button>
+    <div id="myDropdownTitle" class="dropdown-content">
+        <input type="text" placeholder="Search.." id="myInputTitle" onkeyup="filterFunction('Title')">
+
+
+            <select multiple id="TitleDropdown" class="Selector">
+            {% for t in title_list %}
+                    <option name="selected_Title" value="{{ t }}"> {{ t }}</option>
+            {% endfor %}
+            </select>
+
+    </div>
+</div>
+
+<div class="toggle">
+    <label> Include rated movies
+        <input type="checkbox" name="include"> <span class="slider"></span> </label>
+</div>
+
+<br> 
+<br> 
+
+<button onclick="ApplyFilter('{{user_id}}')">Apply filter options</button>
+
+
+<div class="container" id="container">
+    <h2>Movies</h2>
+
+    {% for m, mid, imid, tmbid, link, tag, content, rating, reviews, probability in results %}
+        <div class="panel panel-default" >
+            <div class="panel-heading"><b>{{ m.title }}</b>
+                <a href={{mid}} target="_blank">&nbsp;  &nbsp; &nbsp;  MOVIELENS  &nbsp; </a>
+                <a href={{imid}} target="_blank">  &nbsp; IMDB &nbsp;  </a>
+                <a href={{tmbid}} target="_blank"> &nbsp;  TMDB &nbsp;  </a>
+
+            </div>
+             
+            <div class="panel-body">
+                <p>
+                    {% for g in m.genres %}
+                        <span class="label label-default" style="background-color: yellowgreen;">{{ g.genre }}</span>
+                    {% endfor %}  
+
+                    {% for t in tag %}
+                    <span class="label label-default" style="background-color: goldenrod;">{{ t }}</span>
+                    {% endfor %}
+                </p>
+
+                <div class="like-area">  
+                    {% set checked = (m.id in faves)%}
+                    <input type="checkbox" id="like_{{ m.id }}" {% if checked == True%} checked {% endif %} name="like_{{ m.id }}"onclick="likeMovie('{{ m.id }}')"> <label for="like_{{ m.id }}"></label>
+                </div>
+
+                <div class="rate-area">
+                    <input type="radio" id="5-star_{{ m.id }}" name="rating_{{ m.id }}" value="5" {% if 5 == rating.rating_value%} checked {% endif %}onclick="rateMovie('{{ m.id }}')" /><label for="5-star_{{ m.id }}" title="Amazing">5 stars</label>
+                    <input type="radio" id="4-star_{{ m.id }}" name="rating_{{ m.id }}" value="4" {% if 4 == rating.rating_value%} checked {% endif %}onclick="rateMovie('{{ m.id }}')" /><label for="4-star_{{ m.id }}" title="Good">4 stars</label>
+                    <input type="radio" id="3-star_{{ m.id }}" name="rating_{{ m.id }}" value="3" {% if 3 == rating.rating_value%} checked {% endif %}onclick="rateMovie('{{ m.id }}')" /><label for="3-star_{{ m.id }}" title="Average">3 stars</label>
+                    <input type="radio" id="2-star_{{ m.id }}" name="rating_{{ m.id }}" value="2" {% if 2 == rating.rating_value%} checked {% endif %}onclick="rateMovie('{{ m.id }}')" /><label for="2-star_{{ m.id }}" title="Not bad">2 stars</label>
+                    <input type="radio" id="1-star_{{ m.id }}" name="rating_{{ m.id }}" value="1" {% if 1 == rating.rating_value%} checked {% endif %}onclick="rateMovie('{{ m.id }}')" /><label for="1-star_{{ m.id }}" title="Terrible">1 stars</label>
+                </div>
+
+                <br> 
+
+                    
+                <div class="picture-container">
+                    <div class="picture-image"> 
+                    <img src={{link}} alt="Imagine a poster of the movie {{m.title}} would be here" width="150"> </div>
+                    <div class="review-container">
+                    <div class="review-header"> Reviews</div>
+                    
+                    
+                    <div class="picture-text">
+                    
+                    {% for r in reviews %}
+                    <div class="review-container"> 
+                        
+                        <p><b>{{r}}</b></p>
+                        
+                    </div>
+                    {% endfor %}
+
+
+                    </div>
+
+                    
+
+                    </div>
+                </div>
+
+                <br>
+                
+                <div id="filterView">
+                    <div class="filterOption"> 
+                        With a probability of {{probability}} % u like the movie
+                    </div>
+                </div>
+                    
+
+
+            <div class="content-container">
+            </p> {{content}} </p>
+            </div>
+
+            </div>
+            <div class="panel-footer">          
+            </div>
+        </div>
+    {% endfor %}
+
+</div>
+
+
+
+<script>
+
+var selectedOptions = {};
+
+function updateFilterView() {
+    console.log("filterview function")
+    var filterView = document.getElementById('filterView');
+    filterView.innerHTML = ''; // Cle8ar previous content
+
+    Object.keys(selectedOptions).forEach(function (category) {
+
+        var values = selectedOptions[category];
+        console.log("the values" + values)
+
+        values.forEach(function (value) {
+            var filterOption = document.createElement('div');
+            filterOption.className = 'filterOption';
+            filterOption.textContent = value;
+            filterOption.name = category; 
+            filterView.appendChild(filterOption);
+            filterOption.onclick = function() {
+                // Handle selection of options 
+                var name = this.name; 
+                var value = this.textContent;
+
+                // Handle FilterView 
+                option = document.querySelector('option[value="'+value+'"][name="selected_'+name+'"]');  
+                option.selected = !option.selected;
+                this.remove();
+                list = selectedOptions[category]
+                if (list.includes(value)){
+                    list.splice(list.indexOf(value),1)
+                }
+
+            };
+        });
+    });
+}
+
+
+function getSelectedValues(selectId) {
+            var selectedOptions = document.getElementById(selectId).selectedOptions;
+            var values = [];
+
+            for (var i = 0; i < selectedOptions.length; i++) {
+                values.push(selectedOptions[i].value);
+            }
+
+            return values;
+        }
+
+        // Attach event listeners for each category
+        var categories = ["Title", "Tag", "Genre", "NrRec", "Algorithm"];
+        categories.forEach(function (category) {
+            var selectId = category + 'Dropdown';
+            selectedOptions[category] = getSelectedValues(selectId);
+
+            var categoryDropdown = document.getElementById(category + 'Dropdown');
+
+            document.getElementById(selectId).addEventListener('change', function () {
+                selectedOptions[category] = getSelectedValues(selectId);
+                updateFilterView();
+            });
+
+            categoryDropdown.addEventListener('mousedown', function (event) {
+                event.preventDefault();
+                updateFilterView();
+
+                var originalScrollTop = this.scrollTop;
+                
+                if (category == "NrRec" || category == "Algorithm"){
+                    limit_number = 0;
+                } 
+
+                else{
+                    limit_number = 2; 
+                }
+                
+                // if option is clicked make it unselected
+                if (event.target.selected == true){
+                    event.target.selected = !event.target.selected;
+                    selectedOptions[category] = getSelectedValues(selectId);
+                }
+
+                // if option is unselected ... 
+                else if (event.target.selected == false){
+                    if (selectedOptions[category].length <= limit_number ){
+                        event.target.selected = !event.target.selected;
+                        selectedOptions[category] = getSelectedValues(selectId);
+                    }
+                };
+
+                setTimeout(() => {
+                    this.scrollTop = originalScrollTop;
+                }, 0);
+
+                this.focus();
+                updateFilterView();
+        });
+
+            categoryDropdown.addEventListener('mousemove', function (event) {
+                event.preventDefault();
+            });
+        });
+
+        // Initial update
+        updateFilterView();
+    
+    function toggleDropdown(category) {
+        document.getElementById("myDropdown"+category).classList.toggle("show");
+    }
+
+    function toggleDropdown(category) {
+        document.getElementById("myDropdown"+category).classList.toggle("show");
+    }
+
+    function filterFunction(category) {
+        var input, filter, div, optionList, i;
+        console.log("myInput"+category);
+        input = document.getElementById("myInput"+category);
+        filter = input.value.toUpperCase();
+        div = document.getElementById("myDropdown"+category);
+        optionList = div.getElementsByTagName("option");
+        var matchedElements = [];
+
+        for (i = 0; i < optionList.length; i++) {
+            var txtValue = optionList[i].textContent || optionList[i].innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                optionList[i].style.display = "";
+                matchedElements.push(optionList[i]); 
+            } else {
+                optionList[i].style.display = "none";
+            }
+        }
+
+    }   
+
+    function rateMovie(movieId) {
+        var rating = document.querySelector('input[name="rating_' + movieId + '"]:checked').value;
+
+        // Use Fetch to asynchronously send the rating to the server
+        fetch('/rate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'movie_id=' + movieId + '&rating=' + rating,
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.text();
+        })
+        .then(data => {
+            console.log(data); // Process the server response here
+        })
+        .catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
+    }
+
+    function likeMovie(movieId) {
+      // Use Fetch to asynchronously send the rating to the server
+      fetch('/like', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: 'movie_id=' + movieId,
+      })
+      .then(response => {
+          if (!response.ok) {
+              throw new Error('Network response was not ok');
+          }
+          return response.text();
+      })
+      .then(data => {
+          console.log(data); // Process the server response here
+      })
+      .catch(error => {
+          console.error('There was a problem with the fetch operation:', error);
+      });
+  }
+
+  function getSelectedValue(selector) {
+    var selectedOptions = document.querySelectorAll(selector + ':checked');
+    var values = [];
+
+
+    if (selectedOptions.length == 0) {
+        console.log("empty option")
+        return '0';
+    }
+    // Check if a checked option exists
+    else {
+        selectedOptions.forEach(function (option) {
+            values.push(option.value);
+        });
+        
+        console.log(values)
+        return values;
+    } 
+
+}
+
+  function ApplyFilter(user_id){
+
+    // code sowas wie wenn null oder mit if nacch checked suchen 
+    console.debug("FILTER BUTTON PRESSED")
+
+    var tag = getSelectedValue('option[name="selected_Tag"]');
+    var genre = getSelectedValue('option[name="selected_Genre"]');
+    var number = getSelectedValue('option[name="selected_NrRec"]');
+    var algorithm = getSelectedValue('option[name="selected_Algorithm"]');
+    var title = getSelectedValue('option[name="selected_Title"]'); 
+    var include = getSelectedValue('input[name="include"]');
+    var allFilters = getSelectedValue('option[name="all_filters"]');
+
+    console.debug("GET VALUES")
+    console.debug(tag, genre, number, algorithm, title, include, allFilters)
+
+
+    // Use Fetch to asynchronously send the rating to the server
+    fetch('/recommend', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'user_id=' + user_id + '&tag=' + tag + '&genre=' + genre + '&number=' + number + '&algorithm=' + algorithm + "&include=" + include,
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.text();
+    })
+    .then(data => {
+        document.getElementById('container').innerHTML = data;
+        console.log(data); // Process the server response here
+    })
+    .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+    });
+    }
+
+    
+</script>
+
+
+{% endblock %}
