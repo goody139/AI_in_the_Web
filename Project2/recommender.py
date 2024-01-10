@@ -64,6 +64,8 @@ def home_page():
     # render home.html template
     return render_template("home.html")
 
+    
+
 
 # The Members page is only accessible to authenticated users via the @login_required decorator
 @app.route('/movies')
@@ -168,6 +170,8 @@ def movies_page_filtered():
         
 
         print(genres, tags)
+
+        
 
 
         if genres and tags:
