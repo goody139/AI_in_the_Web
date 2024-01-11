@@ -20,9 +20,9 @@ from scipy.special import expit
 """ This file contains several helper functions"""
 
 def get_user_ratings(user_id):
-    ratings = Rating.query.filter_by(user_id=user_id).all()
-    #{rating.movie_id: rating.rating_value for rating in user_ratings}
-    data = pd.DataFrame([(rating.user_id, rating.movie_id, rating.rating_value) for rating in ratings],
+    ratings = MovieRating.query.filter_by(user_id=user_id).all()
+    #{rating.movie_id: rating.rating for rating in user_ratings}
+    data = pd.DataFrame([(rating.user_id, rating.movie_id, rating.rating) for rating in ratings],
                         columns=['user', 'item', 'rating'])
     
     return data
@@ -37,7 +37,7 @@ def create_reviews(movies):
 
     reviews = []
     for movie in movies: 
-            links = Link.query.filter_by(movieid=movie.id).first()
+            links = MovieLinks.query.filter_by(movieid=movie.id).first()
             #print(links.tmdbid)
             try: 
                 url = "https://api.themoviedb.org/3/movie/{0}/reviews?api_key={1}".format(links.tmdbid, inhalt)
@@ -63,7 +63,7 @@ def create_reviews(movies):
 
 def create_tag_list(): 
     # provide tags from database
-    tags = Tag.query.all()
+    tags = MovieTag.query.all()
     tags = [tag.tag for tag in tags]
     tags = set(tags)
     tags = [tag for tag in tags]
@@ -107,8 +107,8 @@ def exclude_user_ratings(user_id, db):
 
     # EXCLUDE RATINGS FOR ONE USER 
     subquery = (
-        db.session.query(Rating.movie_id)
-        .filter(Rating.user_id == user_id)
+        db.session.query(MovieRating.movie_id)
+        .filter(MovieRating.user_id == user_id)
         .subquery()
     )
 
@@ -125,10 +125,10 @@ def filter_ratings(tag, genre):
 
     # INITIALIZE 
     genres_filter = or_(*[MovieGenre.genre == g for g in genre]) if genre else None
-    tags_filter = or_(*[Tag.tag == t for t in tag]) if tag else None
+    tags_filter = or_(*[MovieTag.tag == t for t in tag]) if tag else None
 
     # FILTER
-    ratings = Rating.query.join(Movie).join(MovieGenre).join(Tag).filter(
+    ratings = MovieRating.query.join(Movie).join(MovieGenre).join(MovieTag).filter(
         tags_filter if tags_filter is not None else True,
         genres_filter if genres_filter is not None else True,  
     ).all()
@@ -139,17 +139,17 @@ def filter_movies(tag, genre, number, include, user_id, db):
     
     # INITIALIZE 
     genres_filter = or_(*[MovieGenre.genre == g for g in genre]) if genre else None
-    tags_filter = or_(*[Tag.tag == t for t in tag]) if tag else None  
+    tags_filter = or_(*[MovieTag.tag == t for t in tag]) if tag else None  
 
     # FILTER
     if include == "on":
-        movies = Movie.query.join(MovieGenre).join(Tag).filter(
+        movies = Movie.query.join(MovieGenre).join(MovieTag).filter(
             tags_filter if tags_filter is not None else True,
             genres_filter if genres_filter is not None else True
         ).all()
 
     else: 
-        movies = Movie.query.join(MovieGenre).join(Tag).filter(and_(
+        movies = Movie.query.join(MovieGenre).join(MovieTag).filter(and_(
             or_(tags_filter if tags_filter is not None else True,
             genres_filter if genres_filter is not None else True), 
             ~Movie.id.in_([movie.id for movie in exclude_user_ratings(user_id, db)])
@@ -164,21 +164,21 @@ def filter_best(tag, genre, number, db, include, user_id):
 
     # INITIALIZE 
     genres_filter = or_(*[MovieGenre.genre == g for g in genre]) if genre else None
-    tags_filter = or_(*[Tag.tag == t for t in tag]) if tag else None
+    tags_filter = or_(*[MovieTag.tag == t for t in tag]) if tag else None
     
     # FILTER
     if include == "on": 
-        movies = Movie.query.join(MovieGenre).join(Tag).join(Rating).filter(
+        movies = Movie.query.join(MovieGenre).join(MovieTag).join(MovieRating).filter(
             tags_filter if tags_filter is not None else True,
             genres_filter if genres_filter is not None else True, 
-            ).group_by(Movie.id).order_by(db.func.avg(Rating.rating_value).desc()).all()
+            ).group_by(Movie.id).order_by(db.func.avg(MovieRating.rating).desc()).all()
                             
     else: 
-        movies = Movie.query.join(MovieGenre).join(Tag).join(Rating).filter(and_(
+        movies = Movie.query.join(MovieGenre).join(MovieTag).join(MovieRating).filter(and_(
             or_(tags_filter if tags_filter is not None else True,
             genres_filter if genres_filter is not None else True), 
             ~Movie.id.in_([movie.id for movie in exclude_user_ratings(user_id, db)])
-            )).group_by(Movie.id).order_by(db.func.avg(Rating.rating_value).desc()).all()
+            )).group_by(Movie.id).order_by(db.func.avg(MovieRating.rating).desc()).all()
      
     # SHUFFLE RESULTS
     random.shuffle(movies) 
@@ -190,8 +190,10 @@ def build_recommender(genre=[], tag=[], algo="0", number=10, user_id="", include
     
     # APPLY filter 
     ratings = filter_ratings(tag, genre)
-    data = pd.DataFrame([(rating.user_id, rating.movie_id, rating.rating_value, rating.timestamp) for rating in ratings],
+    data = pd.DataFrame([(rating.user_id, rating.movie_id, rating.rating, rating.timestamp) for rating in ratings],
                         columns=['user', 'item', 'rating', 'timestamp'])
+
+    print("rec data", data)
     
     # DEFINE type of algorithm 
     if algo == "Similar to other movies you've watched":
@@ -235,6 +237,7 @@ def apply_model(algo, data, user_id, number):
 
 
 def predict_rating(movie_id, user_id, data):
+    print("predict print", movie_id, user_id, data)
     model =  Fallback(ItemItem(10), Bias()).fit(data)
     scores = model.predict_for_user(user_id, movie_id)
     #print(scores)
@@ -259,7 +262,7 @@ def pearson_similarity(user1_ratings, user2_ratings):
 
 def get_recommendations(userId, genre):
     user_ratings = get_user_ratings(userId)
-    all_users = Rating.query.filter(Rating.user_id != userId).limit(100)
+    all_users = MovieRating.query.filter(MovieRating.user_id != userId).limit(100)
 
     print("calculating similarities")
     similarities = []

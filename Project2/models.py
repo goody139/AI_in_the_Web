@@ -33,6 +33,7 @@ class Movie(db.Model):
     links = db.relationship('MovieLinks', backref='movie', lazy=True)
     tags = db.relationship('MovieTag', backref='movie', lazy=True)
     reviews = db.relationship('MovieReview', backref='movie', lazy=True)
+    video_links = db.relationship('VideoLink', backref='movie', lazy=True)
    
 class MovieGenre(db.Model):
     __tablename__ = 'movie_genres'
@@ -78,3 +79,9 @@ class MovieReview(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     review = db.Column(db.String(2048), nullable=False, server_default='')
 
+
+class VideoLink(db.Model):
+    __tablename__ = 'video_links'
+    id = db.Column(db.Integer, primary_key=True)
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), nullable=False)
+    link = db.Column(db.String(255), nullable=False, server_default='')

@@ -109,7 +109,7 @@
   
 
 <div id="movie_list" class="container">
-    {% for m,tags,rating,watchlisted,avg_rating,probabilities in movies_and_tags %}
+    {% for m,tags,rating,watchlisted,avg_rating,probability in movies_and_tags %}
         <div class="panel">
             
             <div class="panel-heading">
@@ -166,10 +166,11 @@
                         <div class="review-header"> Reviews</div>
                         
                         <div class="picture-text">
-                            {% for r in reviews %}
+                            {% for r in m.reviews %}
                             <div class="review-container"> 
-                                
-                                <p><b>{{r}}</b></p>
+                                {% markdown %}
+                                {{r.review }}
+                                {% endmarkdown %}       
                                 
                             </div> <!-- review-container -->
                             {% endfor %}
@@ -215,6 +216,7 @@
 </div>
 
 <script>
+    var selectedOptions = {};
     // Function to handle the click event on any rating link
     function rateMovie(event) {
         event.preventDefault(); // Prevent the default anchor action
@@ -545,7 +547,7 @@
 
     var searchBar = document.getElementById('myInputTitle');
 
-    var selectedOptions = {};
+ 
     
     
     // Event-Listener hinzufügen

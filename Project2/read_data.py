@@ -21,11 +21,15 @@ def get_tmdb_data_for_movie(tmdb_id, apikey_path="secrets/tmdb_api.txt"):
 def check_and_read_data(db):
     # check if we have movies in the database
     # read data if database is empty
+
+    print("baum")
     
     # MOVIES 
     if Movie.query.count() == 0:
+        print("baum2")
         # read movies from csv
         with open('data/movies.csv', newline='', encoding='utf8') as csvfile:
+            print("baum3")
             reader = csv.reader(csvfile, delimiter=',')
             count = 0
             for row in reader:
@@ -43,7 +47,7 @@ def check_and_read_data(db):
                     except IntegrityError:
                         print("Ignoring duplicate movie: " + title)
                         db.session.rollback()
-                        pass
+
                 count += 1
                 if count % 100 == 0:
                     print(count, " movies read")
@@ -92,28 +96,39 @@ def check_and_read_data(db):
                         except KeyError:
                             pass
 
-                        # [TODO] create rating objects and add them to the database
-                        # try:
-                        #     if r.json()['reviews']:
-                        #         data = response.json()
-                        #         review = data.get('results', [])
-                        #         reviews = []
-                        #         if review == []: 
-                        #             reviews.append(review) 
+                    
+                        try:
+                            if r.json()['reviews']:
+                                data = r.json()
+                                review_objects = data.get('reviews', []).get('results', [])
+                                for review in review_objects:
+                                    try: 
+                                        movie_review = MovieReview(movie_id=movie_id, review=review.get('content'))
+                                        db.session.add(movie_review)
+                                    except KeyError:
+                                        pass
+                        except KeyError:
+                            pass
 
-                        #         else: 
-                        #             review = review[0].get('content', [])
-                        #             reviews.append(review.split('\r\n\r\n') )
-
-                        # except KeyError:
-                        #     pass
+                        try:
+                            if r.json()['videos']:
+                                data = r.json()
+                                video_objects = data.get('videos', []).get('results', [])
+                                for video in video_objects:
+                                    try: 
+                                        v = VideoLink(movie_id=movie_id, link=video.get('key'))
+                                        db.session.add(v)
+                                    except KeyError:
+                                        pass
+                        except KeyError:
+                            pass
 
                         db.session.add(movie_links)
                         db.session.commit()  # save data to database
                     except IntegrityError:
                         print("Ignoring duplicate movie with id: " + movie_id)
                         db.session.rollback()
-                        pass
+
                 count += 1
                 if count % 100 == 0:
                     print(count, " movie links read")
@@ -143,7 +158,7 @@ def check_and_read_data(db):
     # RATINGS
     # check if we have ratings in the database
     # read data if database is empty
-    if MovieRating.query.count() == 0:
+    if MovieRating.query.count() == 0 or True:
         # read tags from csv
         with open('data/ratings.csv', newline='', encoding='utf8') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
@@ -154,9 +169,19 @@ def check_and_read_data(db):
                     movie_id = row[1]
                     rating = row[2]
                     timestamp = row[3]
+                    user = User(id=user_id, username=str(user_id))
                     movie_rating = MovieRating(user_id=user_id, movie_id=movie_id, rating=rating, timestamp=timestamp)
                     db.session.add(movie_rating)
                     db.session.commit()  # save data to database
+
+                    try:
+                        db.session.add(user)
+                        db.session.commit()  # save data to database
+
+                    except IntegrityError:
+                        #print("Ignoring duplicate user: " + user_id)
+                        db.session.rollback()
+
                 count += 1
                 if count % 100 == 0:
                     print(count, " ratings read")

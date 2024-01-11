@@ -11,6 +11,7 @@ import numpy as np
 from lenskit.datasets import ML100K
 import pandas as pd
 import random
+from jinja_markdown2 import MarkdownExtension
 
 from lenskit.algorithms.basic import UnratedItemCandidateSelector
 
@@ -52,6 +53,9 @@ algo = Recommender.adapt(user_user)
 algo.fit(data)
 print("set up recommender")
 
+
+
+app.jinja_env.add_extension(MarkdownExtension)
 
 @app.cli.command('initdb')
 def initdb_command():
@@ -363,16 +367,24 @@ def render_movies_template(movies, template, scores=None):
     sorted_movies = np.array(movie_ids)[sorted_indices]
     average_ratings = dict(zip(map(str, sorted_movies), np.array(avg).flatten()[sorted_indices]))
 
+    if not scores:
+        print("move ids", movie_ids, "user id", current_user.id)
+        ratings = filter_ratings([], [])
+        data = pd.DataFrame([(rating.user_id, rating.movie_id, rating.rating, rating.timestamp) for rating in ratings],
+                            columns=['user', 'item', 'rating', 'timestamp'])
+
+        print("rec data", data)
+        probabilities = predict_rating(movie_ids, current_user.id, data)
+    else:
+        probabilities = scores
+
     all_tags = []
     ratings = []
     watchlisted = []
     average_ratings_sorted = []
     movie_ids = []
     
-    if not scores:
-        probabilities = predict_rating(movie_ids, current_user.id, get_user_ratings(current_user.id))
-    else:
-        probabilities = scores
+    
 
     for movie in movies:
         tags = np.array([t.tag for t in movie.tags])
@@ -394,7 +406,7 @@ def render_movies_template(movies, template, scores=None):
 
     tag_list = create_tag_list()
     genre_list = ['Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy', 'Film-Noir', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western', 'Other']
-    item_list = zip([title.title for title in Movie.query.all()], [d.content for d in Movie.query.all()])
+    item_list = zip([title.title for title in Movie.query.all()], [d.blurb for d in Movie.query.all()])
     
 
     return render_template(template, movies_and_tags=zip(movies, all_tags, ratings, watchlisted, average_ratings_sorted, probabilities), genres=db.session.query(MovieGenre.genre).distinct(), tags=db.session.query(MovieTag.tag).distinct(), movie_ids=movie_ids, tag_list=tag_list, genre_list=genre_list, item_list=item_list)
