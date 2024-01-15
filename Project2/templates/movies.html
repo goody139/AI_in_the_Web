@@ -85,7 +85,7 @@
 <br> 
 <br> 
 
-<button onclick="ApplyFilter('{{user_id}}')">Apply filter options</button>
+<button id="filter-form" onclick="ApplyFilter( {{user_id}} )">Apply filter options</button>
 
 
 
@@ -217,6 +217,13 @@
 
 <script>
     var selectedOptions = {};
+    const sort_checkbox = document.getElementById("sort_mode");
+    const sort_label = document.getElementById("sort_mode_label");
+    var movie_list = document.getElementById("movie_list");
+    const sort_by = document.getElementById("sort_by");
+    var filter_text = document.getElementById('filter_text');
+
+
     // Function to handle the click event on any rating link
     function rateMovie(event) {
         event.preventDefault(); // Prevent the default anchor action
@@ -431,6 +438,11 @@
     function ApplyFilter(user_id){
         // code sowas wie wenn null oder mit if nacch checked suchen 
         console.debug("FILTER BUTTON PRESSED")
+        var filter_button = document.getElementById('filter-form');
+        
+        filter_button.disabled = true;
+        filter_button.style.color = "#1e1e1e"
+        filter_button.textContent = "Filtering...";
 
         var tag = getSelectedValue('option[name="selected_Tag"]');
         var genre = getSelectedValue('option[name="selected_Genre"]');
@@ -447,6 +459,31 @@
         console.debug("GET VALUES")
         console.debug(tag, genre, number, algorithm, title, include, allFilters)
 
+        var request_parameters = 'type=' + window.location.pathname
+
+        if (genre != '0') {
+            request_parameters += '&genres=' + genre
+        }
+
+        if (tag != '0') {
+            request_parameters += '&tags=' + tag
+        }
+
+        if (algorithm != '0') {
+            request_parameters += '&algorithm=' + algorithm
+        }
+
+        if (number != '0') {
+            request_parameters += '&number=' + number
+        }
+
+        if (include != '0') {
+            request_parameters += '&include=' + include
+        }
+
+        if (title != '0') {
+            request_parameters += '&title=' + title
+        }
 
         // Use Fetch to asynchronously send the rating to the server
         fetch('/filter', {
@@ -454,16 +491,26 @@
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: 'user_id=' + user_id + '&tag=' + tag + '&genre=' + genre + '&number=' + number + '&algorithm=' + algorithm + "&include=" + include + "&title=" + title,
+            body: request_parameters
         })
         .then(response => {
             if (!response.ok) {
+                filter_button.disabled = false;
+                filter_button.style.color = "black"
+                filter_button.textContent = "Apply filters";
                 throw new Error('Network response was not ok');
             }
             return response.text();
         })
         .then(data => {
-            document.getElementById('container').innerHTML = data;
+            filter_button.disabled = false;
+            filter_button.style.color = "black"
+            filter_button.textContent = "Apply filters";
+            window.history.pushState('page2', 'Title', window.location.pathname + '?genres=' + genre + '&tags=' + tag);
+            
+            setInnerHTML(movie_list, data);
+            movie_list = document.getElementById("movie_list");
+            
             console.log(data); // Process the server response here
         })
         .catch(error => {
@@ -531,6 +578,7 @@
 
     // pass the ids of the shown movies to pass to called functions for sorting
     var movie_ids = {{ movie_ids|safe }};
+    var probabilities = {{ probabilities|safe }};
 
 
     // Attach the event listener to each rating link
@@ -567,11 +615,7 @@
       updateFilterView();
     });
     
-    const sort_checkbox = document.getElementById("sort_mode");
-    const sort_label = document.getElementById("sort_mode_label");
-    var movie_list = document.getElementById("movie_list");
-    const sort_by = document.getElementById("sort_by");
-    var filter_text = document.getElementById('filter_text');
+    
 
     // attach the listener to the check box for sorting ascending / descending
     sort_checkbox.addEventListener("change", () => {
@@ -638,7 +682,7 @@
 
         }
         // Send the request with the selected sorting method
-        xhr.send('s=' + sort_by_value + '&type=' + window.location.pathname + '&movie_ids=' + movie_ids + '&' + parameters);
+        xhr.send('s=' + sort_by_value + '&type=' + window.location.pathname + '&movie_ids=' + movie_ids + '&probabilities=' + probabilities + '&' + parameters);
 
         
     });

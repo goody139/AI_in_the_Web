@@ -43,15 +43,15 @@ db.init_app(app)  # initialize database
 db.create_all()  # create database if necessary
 user_manager = UserManager(app, db, User)  # initialize Flask-User management
 
-timestamp_of_last_model_fit = time.time()
-data = pd.read_sql("movie_ratings", con=db.get_engine().connect(), index_col=None)
-data = data.rename(columns={"user_id":"user", "movie_id":"item"})
-print(data)
+# timestamp_of_last_model_fit = time.time()
+# data = pd.read_sql("movie_ratings", con=db.get_engine().connect(), index_col=None)
+# data = data.rename(columns={"user_id":"user", "movie_id":"item"})
+# print(data)
 
-user_user = UserUser(15, min_nbrs=3) 
-algo = Recommender.adapt(user_user)
-algo.fit(data)
-print("set up recommender")
+# user_user = UserUser(15, min_nbrs=3) 
+# algo = Recommender.adapt(user_user)
+# algo.fit(data)
+# print("set up recommender")
 
 
 
@@ -206,6 +206,7 @@ def movies_page_filtered():
         if  'tags' in request. form:
             tags = request.form.get('tags').split(",")
         print("looking for both")
+        print()
 
         # the elements to filter vary based on the request type
         database_for_filtering = Movie.query
@@ -228,7 +229,7 @@ def movies_page_filtered():
         print(genres, tags)
 
         
-
+        movies=""
 
         if genres and tags:
             print("looking for both", genres, tags)
@@ -378,6 +379,8 @@ def render_movies_template(movies, template, scores=None):
     else:
         probabilities = scores
 
+    
+
     all_tags = []
     ratings = []
     watchlisted = []
@@ -408,8 +411,9 @@ def render_movies_template(movies, template, scores=None):
     genre_list = ['Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy', 'Film-Noir', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western', 'Other']
     item_list = zip([title.title for title in Movie.query.all()], [d.blurb for d in Movie.query.all()])
     
+    # probabilities = [i for i in range(len(watchlisted))]
 
-    return render_template(template, movies_and_tags=zip(movies, all_tags, ratings, watchlisted, average_ratings_sorted, probabilities), genres=db.session.query(MovieGenre.genre).distinct(), tags=db.session.query(MovieTag.tag).distinct(), movie_ids=movie_ids, tag_list=tag_list, genre_list=genre_list, item_list=item_list)
+    return render_template(template, movies_and_tags=zip(movies, all_tags, ratings, watchlisted, average_ratings_sorted, probabilities), genres=db.session.query(MovieGenre.genre).distinct(), tags=db.session.query(MovieTag.tag).distinct(), movie_ids=movie_ids, tag_list=tag_list, genre_list=genre_list, item_list=item_list, probabilities=probabilities)
 
 
 
@@ -423,11 +427,14 @@ def get_newly_sorted_items():
         return render_template("return_to_start.html", title='No search term', error_cause='No search term provided')
     elif not 'movie_ids' in request.form:
         return render_template("return_to_start.html", title='No search term', error_cause='No search term provided')
+    elif not 'probabilities' in request.form:
+        return render_template("return_to_start.html", title='No search term', error_cause='No search term provided')
     
     else:
         request_type = request.form.get('type')[1:]
         sort_by = request.form.get('s')
         movies = request.form.get('movie_ids').split(',')
+        probabilities = request.form.get('probabilities').split(',')
         print("sort ", request_type, " by ", sort_by, " movies:", movies)
 
 
@@ -469,7 +476,7 @@ def get_newly_sorted_items():
                 movie = Movie.query.get(m)
                 q.append(movie)
 
-        return render_movies_template(q, "movies_list.html")
+        return render_movies_template(q, "movies_list.html", probabilities)
    
 
 # Start development web server

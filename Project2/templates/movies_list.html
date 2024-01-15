@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-{% for m,tags,rating,watchlisted,avg_rating in movies_and_tags %}
+{% for m,tags,rating,watchlisted,avg_rating,probability in movies_and_tags %}
     <div class="panel">
         
         <div class="panel-heading">
@@ -12,6 +12,7 @@
                 {% endif %}
             </div>
             <div class="panel-title pull-left"><b>{{ m.title }}</b></div>
+            <div class="match-probability">With a probability of {{probability}} % u like the movie</div>
 
             {% for l in m.links %}
                 <div class="db-links pull-right">
