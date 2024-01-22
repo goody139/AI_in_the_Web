@@ -1,0 +1,118 @@
+{% extends "flask_user_layout.html" %}
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+
+<!-- parameters: m,tags,rating,watchlisted,avg_rating,probability -->
+
+<div class="panel">
+            
+    <div class="panel-heading">
+        <div class="watchlist pull-left">
+            {% if watchlisted%}
+            <a href="#" class="card-link" data-movieid="{{ m.id }}" data-status="0">♥</a>
+            {% else %}
+            <a href="#" class="card-link" data-movieid="{{ m.id }}" data-status="0">♡</a>
+            {% endif %}
+        </div>
+        <div class="panel-title pull-left"><b>{{ m.title }}</b></div>
+        <div class="match-probability"><b>{{probability}}% Match</b></div>
+
+        {% for l in m.links %}
+            <div class="db-links pull-right">
+                <a href=https://movielens.org/movies/{{ l.movie_id }}>
+                    <img src="{{ url_for('static', filename='movielens-logo-white.svg') }}" alt="Movielens"> 
+                </a>
+                <a href=http://www.imdb.com/title/tt{{ l.imdb_id }}>
+                    <img src="{{ url_for('static', filename='IMDb.png') }}" alt="IMDb">
+                </a>
+                <a href=https://www.themoviedb.org/movie/{{ l.tmdb_id}}>
+                    <img src="{{ url_for('static', filename='TMDB.png') }}" alt="TMDB">
+                </a>
+            </div>
+        {% endfor %}
+
+        <div class="clearfix"></div>
+    </div>
+    <div class="panel-body">
+        
+        <img src="{{ m.poster_path }}"/>
+
+        <div class="movie-information">    
+            <p>{{m.blurb}}</p>
+
+            <br>
+            <p>
+                {% for g in m.genres %}
+                    <span class="label label-genre">{{ g.genre }}</span>
+                {% endfor %}
+            </p>
+            <p>
+                {% for t in tags %}
+                    <span class="label label-tag">{{ t }}</span>
+                {% endfor %}
+            </p>
+
+            <p>
+                <b>Runtime: {{ m.runtime }} minutes</b>
+            </p>
+
+            <div class="review-container">
+                <div class="review-header"> Reviews</div>
+                
+                <div class="picture-text">
+                    {% for r in m.reviews %}
+                    <div class="review-container"> 
+                        {% markdown %}
+                        {{r.review }}
+                        {% endmarkdown %}       
+                        
+                    </div> <!-- review-container -->
+                    {% endfor %}
+                </div> <!-- picture-text -->
+
+            </div> <!-- review-container -->
+
+        </div> <!-- movie-information -->       
+    </div> <!-- panel-body -->
+
+    {% if rating %}
+    <div class="panel-footer">
+        <div class="movie-rating">Rated:
+        {% for i in range(1, rating+1) %}
+        <a href="#" id="{{ m.id }}{{ i }}" class="card-link" data-movieid="{{ m.id }}" data-rating="{{ i }}">⭐</a>
+        {% endfor %}
+        {% for i in range(rating+1, 5+1) %}
+        <a href="#" id="{{ m.id }}{{ i }}" class="card-link" data-movieid="{{ m.id }}" data-rating="{{ i }}">☆</a>
+        {% endfor %} Stars
+        </div>
+        
+        <div class="average-rating">
+            Average rating: {{ avg_rating }}
+        </div>
+    </div>
+    {% else %}
+    <div class="panel-footer">
+        <div class="movie-rating">Rate:
+        <a href="#" id="{{m.id}}1" class="card-link" data-movieid="{{ m.id }}" data-rating="1">☆</a>
+        <a href="#" id="{{m.id}}2" class="card-link" data-movieid="{{ m.id }}" data-rating="2">☆</a>
+        <a href="#" id="{{m.id}}3" class="card-link" data-movieid="{{ m.id }}" data-rating="3">☆</a>
+        <a href="#" id="{{m.id}}4" class="card-link" data-movieid="{{ m.id }}" data-rating="4">☆</a>
+        <a href="#" id="{{m.id}}5" class="card-link" data-movieid="{{ m.id }}" data-rating="5">☆</a> Stars
+        </div>
+
+        <div class="average-rating">
+            Average rating: {{ avg_rating }}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% for video_link in m.video_links %}
+    <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/{{video_link.link}}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+{% endfor %}
+
+
+
+{% endblock %}

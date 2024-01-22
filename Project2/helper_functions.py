@@ -120,7 +120,6 @@ def exclude_user_ratings(user_id, db):
     )
 
     return movies_to_exclude
-
 def filter_ratings(tag, genre): 
 
     # INITIALIZE 
@@ -136,10 +135,16 @@ def filter_ratings(tag, genre):
     return ratings
 
 def filter_movies(tag, genre, number, include, user_id, db): 
-    
+
     # INITIALIZE 
     genres_filter = or_(*[MovieGenre.genre == g for g in genre]) if genre else None
     tags_filter = or_(*[MovieTag.tag == t for t in tag]) if tag else None  
+
+    # DEFAULT VALUE 
+    if (genre == []) and (tag == []):
+        default_value = True
+    else : 
+        default_value = False
 
     # FILTER
     if include == "on":
@@ -150,10 +155,10 @@ def filter_movies(tag, genre, number, include, user_id, db):
 
     else: 
         movies = Movie.query.join(MovieGenre).join(MovieTag).filter(and_(
-            or_(tags_filter if tags_filter is not None else True,
-            genres_filter if genres_filter is not None else True), 
+            or_(tags_filter if tags_filter is not None else default_value,
+            genres_filter if genres_filter is not None else default_value), 
             ~Movie.id.in_([movie.id for movie in exclude_user_ratings(user_id, db)])
-        )).all()       
+        )).all()    
 
     # SHUFFLE RESULTS
     random.shuffle(movies)
@@ -166,6 +171,12 @@ def filter_best(tag, genre, number, db, include, user_id):
     genres_filter = or_(*[MovieGenre.genre == g for g in genre]) if genre else None
     tags_filter = or_(*[MovieTag.tag == t for t in tag]) if tag else None
     
+    # DEFAULT VALUE 
+    if (genre == []) and (tag == []): 
+        default_value = True
+    else : 
+        default_value = False
+
     # FILTER
     if include == "on": 
         movies = Movie.query.join(MovieGenre).join(MovieTag).join(MovieRating).filter(
@@ -175,13 +186,12 @@ def filter_best(tag, genre, number, db, include, user_id):
                             
     else: 
         movies = Movie.query.join(MovieGenre).join(MovieTag).join(MovieRating).filter(and_(
-            or_(tags_filter if tags_filter is not None else True,
-            genres_filter if genres_filter is not None else True), 
+            or_(tags_filter if tags_filter is not None else default_value,
+            genres_filter if genres_filter is not None else default_value), 
             ~Movie.id.in_([movie.id for movie in exclude_user_ratings(user_id, db)])
             )).group_by(Movie.id).order_by(db.func.avg(MovieRating.rating).desc()).all()
      
-    # SHUFFLE RESULTS
-    random.shuffle(movies) 
+
 
     return movies[:number] 
 
@@ -232,7 +242,7 @@ def apply_model(algo, data, user_id, number):
 
     print(scores)
 
-    return get_movies(movie_ids), scores
+    return Movie.query.filter(Movie.id.in_(movie_ids)).all(), scores
 
 
 

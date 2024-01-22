@@ -103,6 +103,7 @@
             <option value="runtime">Runtime</option>
             <option value="mean_rating">Mean rating</option>
             <option value="title">Title</option>
+            <option value="probabilities">Match probability</option>
         </select>
     </div>
 </div>
@@ -120,8 +121,8 @@
                     <a href="#" class="card-link" data-movieid="{{ m.id }}" data-status="0">♡</a>
                     {% endif %}
                 </div>
-                <div class="panel-title pull-left"><b>{{ m.title }}</b></div>
-                <div class="match-probability">With a probability of {{probability}} % u like the movie</div>
+                <div class="panel-title pull-left"><b><a href="{{ url_for('movie', id=m.id) }}">{{ m.title }}</a></b></div>
+                <div class="match-probability"><b>{{probability}}% Match</b></div>
 
                 {% for l in m.links %}
                     <div class="db-links pull-right">
@@ -157,11 +158,14 @@
                             <span class="label label-tag">{{ t }}</span>
                         {% endfor %}
                     </p>
-    
+                    
+                    {% if m.runtime %}
                     <p>
                         <b>Runtime: {{ m.runtime }} minutes</b>
                     </p>
+                    {% endif %}
 
+                    {% if m.reviews %}
                     <div class="review-container">
                         <div class="review-header"> Reviews</div>
                         
@@ -175,8 +179,8 @@
                             </div> <!-- review-container -->
                             {% endfor %}
                         </div> <!-- picture-text -->
-
                     </div> <!-- review-container -->
+                    {% endif %}
 
                 </div> <!-- movie-information -->       
             </div> <!-- panel-body -->
@@ -214,6 +218,10 @@
         </div>
     {% endfor %}
 </div>
+
+{% if show_more_enabled %}
+    <button id="show-more">Show more</button>
+{% endif %}
 
 <script>
     var selectedOptions = {};
@@ -518,6 +526,67 @@
         });
     }
 
+    var number_of_result_pages_shown = 1;
+
+    var show_more_button = document.getElementById('show-more');
+    show_more_button.addEventListener("click", function() {
+        event.preventDefault(); // Prevent the default anchor action
+        show_more_button.disabled = true;
+        show_more_button.style.color = "#1e1e1e";
+
+        // Create an AJAX request
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/load-more-results', true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        var parameters = window.location.search
+
+        // Handle the response
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                // Replace the entire div with the response
+                //appendInnerHTML(movie_list, xhr.responseText);
+                console.log("hello");
+                movie_list.insertAdjacentHTML('beforeend', xhr.responseText);
+                
+                let parser = new DOMParser();
+                const doc = parser.parseFromString(xhr.responseText, 'text/html');
+                scripts = doc.getElementsByTagName('script');
+                var arrayScriptContents = [].map.call(scripts, function(el) {
+                    var new_script = document.createElement('script');
+                    new_script.textContent = el.textContent;
+                    document.body.appendChild(new_script);
+                    console.log(el.textContent);
+                    return el.textContent;
+                });
+
+                    
+                
+                if(typeof new_movie_ids !== 'undefined') {
+                    movie_ids = movie_ids.concat(new_movie_ids);
+                    new_movie_ids = movie_ids;
+                    console.log(movie_ids);
+                }
+                if(typeof new_probabilities !== 'undefined') {
+                    probabilities = probabilities.concat(new_probabilities);
+                    new_probabilities = probabilities;
+                    console.log(probabilities);
+                }
+                
+                console.log("hello1");
+                //movie_list.innerHTML = xhr.responseText;
+                // movie_list = document.getElementById("movie_list");
+                number_of_result_pages_shown += 1;
+                show_more_button.disabled = false;
+                show_more_button.style.color = "black";
+
+            } else {
+                alert('Request failed. Returned status of ' + xhr.status);
+            }
+        };
+
+        // Send the request with the selected sorting method
+        xhr.send('type=' + window.location.pathname + '&page=' + number_of_result_pages_shown + '&movie_ids=' + movie_ids + '&probabilities=' + probabilities + '&' + parameters);
+    });
 
     // Attach event listeners for each category
     var categories = ["Title", "Tag", "Genre", "NrRec", "Algorithm"];
@@ -649,6 +718,24 @@
         });
     }
 
+    function appendInnerHTML(elm, html) {
+        elm.innerHTML = html;
+        
+        Array.from(elm.querySelectorAll("script"))
+            .forEach( oldScriptEl => {
+            const newScriptEl = document.createElement("script");
+            
+            Array.from(oldScriptEl.attributes).forEach( attr => {
+                newScriptEl.setAttribute(attr.name, attr.value) 
+            });
+            
+            const scriptText = document.createTextNode(oldScriptEl.innerHTML);
+            newScriptEl.appendChild(scriptText);
+            
+            oldScriptEl.parentNode.append(newScriptEl, oldScriptEl);
+        });
+    }
+
     // attach listener to select for changing the thing to sort by
     sort_by.addEventListener("change", () => {
         // make a request to call a python function that takes care of the sorting
@@ -679,7 +766,11 @@
 
         if(typeof new_movie_ids !== 'undefined') {
             movie_ids = new_movie_ids;
-
+            console.log(movie_ids);
+        }
+        if(typeof new_probabilities !== 'undefined') {
+            probabilities = new_probabilities;
+            console.log(probabilities);
         }
         // Send the request with the selected sorting method
         xhr.send('s=' + sort_by_value + '&type=' + window.location.pathname + '&movie_ids=' + movie_ids + '&probabilities=' + probabilities + '&' + parameters);

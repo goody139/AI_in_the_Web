@@ -40,14 +40,16 @@ h1 {
 
 
 .db-links {
-    width: 50%;
+    width: fit-content;    
+    white-space: nowrap;
+    padding-right: 5%;
 }
 
 .db-links img{
     height: 20px;
     padding-left: 5%;
     padding-right: 0;
-    float: right;
+    display: inline-block;
 
 }
 
@@ -223,8 +225,6 @@ button {
 }
 
 
-
-<style>
 /* Stil für das select-Element */
 #filterView {
             display: flex;
@@ -418,16 +418,16 @@ button {
         }
         
 
-        .review-header {
-            font-size: 1.5em;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: white;
-        }
+.review-header {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: white;
+}
 
-        .review-content {
-            line-height: 1.6;
-        }
+.review-content {
+    line-height: 1.6;
+}
 
 
 label{
@@ -436,4 +436,46 @@ label{
 
 label ::before{
     grid-column: 1 / 2;
+}
+
+
+.recommendation-class {
+    padding-left: 10%;
+    padding-right: 10%;
+    padding-bottom: 20px;
+}
+
+.recommendation-row {
+
+    overflow: scroll;
+}
+.movie-view {
+    display: inline;
+    padding: 10px;
+}
+
+.recommendation-row {
+    overflow: auto;
+    white-space: nowrap;
+}
+
+.movie-view {
+    display: inline-block;
+    vertical-align:top;
+    margin-right: 10px;
+}
+  
+.match-probability {
+    display: inline;
+    color:#04AA6D;
+    margin-left: 2%;
+}
+
+.movie-detail-link {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1;
 }
