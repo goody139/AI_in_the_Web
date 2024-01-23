@@ -6,9 +6,9 @@
 <!-- parameters: user_movies, watchlist_movies, genre_movies, genre -->
 
 <div id="recommendation-container">
-    {% for movies, heading in movies_and_headings %}
+    {% for movies, heading, type in movies_and_headings %}
         <div class="recommendation-class" class="panel">
-            <a href="/recommendations?type=user_based"><h2>{{ heading }}</h2> </a>
+            <a href="/recommendations?recommender={{type}}"><h2>{{ heading }}</h2> </a>
             <div class="recommendation-row">
                 {% for m in movies %}
                     <div class="movie-view">

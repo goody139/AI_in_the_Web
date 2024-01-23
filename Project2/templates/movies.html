@@ -10,6 +10,35 @@
 <br>
 
 <div class="dropdown">
+    <button onclick="toggleDropdown('Genre')" class="dropbtn">Genre</button>
+    <div id="myDropdownGenre" class="dropdown-content">
+        <input type="text" placeholder="Search.." id="myInputGenre" onkeyup="filterFunction('Genre')">
+
+            <select id="GenreDropdown" class="Selector" multiple>
+            {% for genre in genre_list %}
+                    <option name="selected_Genre" value="{{ genre }}"> {{ genre }} </option>
+            {% endfor %}
+            </select>
+    </div>
+</div>
+
+{% if show_recommendation %}
+<div class="dropdown">
+    <button onclick="toggleDropdown('Algorithm')" class="dropbtn">Recommendation</button>
+    <div id="myDropdownAlgorithm" class="dropdown-content">
+        <input type="text" placeholder="Search.." id="myInputAlgorithm" onkeyup="filterFunction('Algorithm')">
+
+            <select id="AlgorithmDropdown" class="Selector" multiple>
+            {% set algorithm = ["Recommended for you", "Other users also liked", "Based on the movies you liked", "Most popular"] %}
+            {% for i in algorithm %}
+                    <option name="selected_Algorithm" value="{{ i }}"> {{ i }}</option>
+            {% endfor %}
+            </select>
+    </div>
+</div>
+{% endif %}
+
+<div class="dropdown">
     <button onclick="toggleDropdown('Tag')" class="dropbtn">Tags</button>
     <div id="myDropdownTag" class="dropdown-content">
         <input type="text" placeholder="Search.." id="myInputTag" onkeyup="filterFunction('Tag')">
@@ -23,64 +52,10 @@
     </div>
 </div>
 
-<div class="dropdown">
-    <button onclick="toggleDropdown('Genre')" class="dropbtn">Genre</button>
-    <div id="myDropdownGenre" class="dropdown-content">
-        <input type="text" placeholder="Search.." id="myInputGenre" onkeyup="filterFunction('Genre')">
 
-            <select id="GenreDropdown" class="Selector" multiple>
-            {% for genre in genre_list %}
-                    <option name="selected_Genre" value="{{ genre }}"> {{ genre }} </option>
-            {% endfor %}
-            </select>
-    </div>
-</div>
-
-<div class="dropdown">
-    <button onclick="toggleDropdown('NrRec')" class="dropbtn">How many?</button>
-    <div id="myDropdownNrRec" class="dropdown-content">
-
-            <select id="NrRecDropdown" multiple class="Selector">
-            {% for i in range(1,31) %}
-                    <option name="selected_NrRec" value="{{ i }}"> {{ i }} </option>
-            {% endfor %}
-            </select>
-    </div>
-</div>
-
-<div class="dropdown">
-    <button onclick="toggleDropdown('Algorithm')" class="dropbtn">Recommendation</button>
-    <div id="myDropdownAlgorithm" class="dropdown-content">
-        <input type="text" placeholder="Search.." id="myInputAlgorithm" onkeyup="filterFunction('Algorithm')">
-
-            <select id="AlgorithmDropdown" class="Selector" multiple>
-            {% set algorithm = ["Other Users also liked","Similar to other movies you've watched", "Best rated movies" ] %}
-            {% for i in algorithm %}
-                    <option name="selected_Algorithm" value="{{ i }}"> {{ i }}</option>
-            {% endfor %}
-            </select>
-    </div>
-</div>
-
-<div class="dropdown">
-    <button onclick="toggleDropdown('Title')" class="dropbtn">Specific title?</button>
-    <div id="myDropdownTitle" class="dropdown-content">
-        <input type="text" placeholder="Search.." id="myInputTitle" onkeyup="filterFunction('Title')">
-
-
-            <select multiple id="TitleDropdown" class="Selector">
-            {% for t, d in item_list %}
-                    <option name="selected_Title" value="{{ t }}" data-description="{{d}}"> {{ t }}</option>
-            {% endfor %}
-            </select>
-
-    </div>
-</div>
-
-<div class="toggle">
-    <label> Include rated movies
-        <input type="checkbox" name="include"> <span class="slider"></span> </label>
-</div>
+{% if show_search %}
+    <input style="color: black" type="text" data-title="{{ t_list }}" data-description="{{d_list}}" placeholder="Search.." id="myInputTitle">
+{% endif %}
 
 <br> 
 <br> 
@@ -396,28 +371,14 @@
 
         for (i = 0; i < optionList.length; i++) {
             var txtValue = optionList[i].textContent || optionList[i].innerText;
-
-            if (category == 'Title'){
-                var description = optionList[i].dataset.description;
-
-                if (txtValue.toUpperCase().indexOf(filter) > -1 || description.toUpperCase().indexOf(filter) > -1) {
-                    optionList[i].style.display = "";
-                    matchedElements.push(optionList[i]);
-                } else {
-                    optionList[i].style.display = "none";
-                }
-
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                console.log("other")
+                optionList[i].style.display = "";
+                matchedElements.push(optionList[i]); 
+            } else {
+                optionList[i].style.display = "none";
             }
-
-            else {
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    console.log("other")
-                    optionList[i].style.display = "";
-                    matchedElements.push(optionList[i]); 
-                } else {
-                    optionList[i].style.display = "none";
-                }
-            }
+            
         }
 
     }   
@@ -454,80 +415,81 @@
 
         var tag = getSelectedValue('option[name="selected_Tag"]');
         var genre = getSelectedValue('option[name="selected_Genre"]');
-        var number = getSelectedValue('option[name="selected_NrRec"]');
+        {% if show_recommendation %}
         var algorithm = getSelectedValue('option[name="selected_Algorithm"]');
-        var include = getSelectedValue('input[name="include"]');
+        {% endif %}
         var allFilters = getSelectedValue('option[name="all_filters"]');
         
         // selected options der titel in dem moment speichern zu der liste in der gesucht wird 
         // das sind dann nicht selected ones, sondern müssen die sein, die gefiltert werden in dem Moment 
         // wie löschen (mehrere items) wenn option weggeklickt wird dictionary? item keys konstrukt 
-        var title = selectedOptions["Title"]
 
-        console.debug("GET VALUES")
-        console.debug(tag, genre, number, algorithm, title, include, allFilters)
+        console.debug("GET VALUES");
+        console.debug(tag, genre, algorithm, allFilters);
 
-        var request_parameters = 'type=' + window.location.pathname
+        var request_parameters = 'type=' + window.location.pathname.substring(1);
+        var have_something_to_filter = false;
 
         if (genre != '0') {
-            request_parameters += '&genres=' + genre
+            request_parameters += '&genres=' + genre;
+            have_something_to_filter = true;
         }
 
         if (tag != '0') {
-            request_parameters += '&tags=' + tag
+            request_parameters += '&tags=' + tag;
+            have_something_to_filter = true;
         }
 
+        {% if show_recommendation %}
         if (algorithm != '0') {
-            request_parameters += '&algorithm=' + algorithm
+            request_parameters += '&algorithm=' + algorithm;
+            have_something_to_filter = true;
         }
+        {% endif %}
 
-        if (number != '0') {
-            request_parameters += '&number=' + number
-        }
-
-        if (include != '0') {
-            request_parameters += '&include=' + include
-        }
-
-        if (title != '0') {
-            request_parameters += '&title=' + title
-        }
-
-        // Use Fetch to asynchronously send the rating to the server
-        fetch('/filter', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: request_parameters
-        })
-        .then(response => {
-            if (!response.ok) {
+        if (have_something_to_filter) {
+            // Use Fetch to asynchronously send the rating to the server
+            var parameters = window.location.search;
+            parameters = parameters.replace('?','&');
+            fetch('/filter', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: request_parameters + "&" + parameters
+            })
+            .then(response => {
+                if (!response.ok) {
+                    filter_button.disabled = false;
+                    filter_button.style.color = "black"
+                    filter_button.textContent = "Apply filters";
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(data => {
                 filter_button.disabled = false;
                 filter_button.style.color = "black"
                 filter_button.textContent = "Apply filters";
-                throw new Error('Network response was not ok');
-            }
-            return response.text();
-        })
-        .then(data => {
-            filter_button.disabled = false;
-            filter_button.style.color = "black"
-            filter_button.textContent = "Apply filters";
-            window.history.pushState('page2', 'Title', window.location.pathname + '?genres=' + genre + '&tags=' + tag);
-            
-            setInnerHTML(movie_list, data);
-            movie_list = document.getElementById("movie_list");
-            
-            console.log(data); // Process the server response here
-        })
-        .catch(error => {
-            console.error('There was a problem with the fetch operation:', error);
-        });
+                //window.history.pushState('page2', 'Title', "?" + request_parameters + parameters);
+                if (typeof show_more_button !== 'undefined'){
+                    show_more_button.style.visibility = "hidden"
+                }
+                
+                setInnerHTML(movie_list, data);
+                movie_list = document.getElementById("movie_list");
+                
+                console.log(data); // Process the server response here
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+        }
     }
 
     var number_of_result_pages_shown = 1;
 
+{% if show_more_enabled %}
     var show_more_button = document.getElementById('show-more');
     show_more_button.addEventListener("click", function() {
         event.preventDefault(); // Prevent the default anchor action
@@ -538,7 +500,9 @@
         var xhr = new XMLHttpRequest();
         xhr.open('POST', '/load-more-results', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        var parameters = window.location.search
+        var parameters = window.location.search;
+        parameters = parameters.replace('?','&');
+        console.log(parameters);
 
         // Handle the response
         xhr.onload = function() {
@@ -585,11 +549,17 @@
         };
 
         // Send the request with the selected sorting method
-        xhr.send('type=' + window.location.pathname + '&page=' + number_of_result_pages_shown + '&movie_ids=' + movie_ids + '&probabilities=' + probabilities + '&' + parameters);
+        xhr.send('type=' + window.location.pathname + '&page=' + number_of_result_pages_shown + '&movie_ids=' + movie_ids + '&probabilities=' + probabilities + parameters);
     });
+{% endif %}   
 
     // Attach event listeners for each category
-    var categories = ["Title", "Tag", "Genre", "NrRec", "Algorithm"];
+    {% if show_recommendation %}
+    var categories = ["Tag", "Genre", "Algorithm"];
+    {% else %}
+    var categories = ["Tag", "Genre"];
+    {% endif %}
+
     categories.forEach(function (category) {
         var selectId = category + 'Dropdown';
         selectedOptions[category] = getSelectedValues(selectId);
@@ -607,7 +577,7 @@
 
             var originalScrollTop = this.scrollTop;
             
-            if (category == "NrRec" || category == "Algorithm"){
+            if (category == "Algorithm"){
                 limit_number = 0;
             } 
 
@@ -660,30 +630,7 @@
     var links = document.querySelectorAll('.watchlist .card-link');
     for (var i = 0; i < links.length; i++) {
         links[i].addEventListener('click', changeWatchlist);
-    }
-
-    var searchBar = document.getElementById('myInputTitle');
-
- 
-    
-    
-    // Event-Listener hinzufügen
-    searchBar.addEventListener('keyup', function (event) {
-      
-      // input in filterview einfügen 
-      if (event.keyCode === 13) {
-        if(! selectedOptions["Title"].includes(searchBar.value) && selectedOptions["Title"].length <= 2){
-        selectedOptions["Title"].push(searchBar.value)
-        }
-      }
-    
-      // wie damit umgehen? in update filter view wird nicht gespeichert, da nicht selected ist boolean? wenn 
-      // geklickt wird?!
-      // in dem moment für recommender speichern, welche optionen noch eingeblendet sind (durch suche )
-      console.log(document.getElementById('TitleDropdown'))
-      updateFilterView();
-    });
-    
+    }    
     
 
     // attach the listener to the check box for sorting ascending / descending
@@ -749,7 +696,8 @@
         var xhr = new XMLHttpRequest();
         xhr.open('POST', '/sort_by', true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        var parameters = window.location.search
+        var parameters = window.location.search;
+        parameters = parameters.replace('?','&');
 
         // Handle the response
         xhr.onload = function() {
@@ -773,67 +721,48 @@
             console.log(probabilities);
         }
         // Send the request with the selected sorting method
-        xhr.send('s=' + sort_by_value + '&type=' + window.location.pathname + '&movie_ids=' + movie_ids + '&probabilities=' + probabilities + '&' + parameters);
+        xhr.send('s=' + sort_by_value + '&type=' + window.location.pathname + '&movie_ids=' + movie_ids + '&probabilities=' + probabilities + parameters);
 
         
     });
 
-    
-    // document.getElementById('filter_form').addEventListener("click", function() {
-    //     event.preventDefault(); // Prevent the default anchor action
-    //     this.disabled = true;
-    //     this.style.color = "#1e1e1e"
-    //     filter_text.textContent = "Filtering...";
+{% if show_search %}
+    var searchBar = document.getElementById('myInputTitle');
+    // Event-Listener hinzufügen
+    searchBar.addEventListener('keyup', function (event) {
+        // input in filterview einfügen 
+        if (event.keyCode === 13) {
+        //if(! selectedOptions["Title"].includes(searchBar.value) && selectedOptions["Title"].length <= 2){
+        //selectedOptions["Title"].push(searchBar.value)
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/searchbar', true);
+        xhr.setRequestHeader('Content-Type', 'application/json'); // Set Content-Type to application/json
+        // Convert the list of objects to JSON
+        console.log(SVGAElement)
+        console.log(searchBar.value)
+        //var jsonPayload = JSON.stringify(Searchbar_matches);
+        var jsonPayload = JSON.stringify(searchBar.value);
 
-    //     var v = document.getElementById("genres").selectedOptions;
-    //     var genres = Array.from(v).map(({ value }) => value);
-    //     var v = document.getElementById('tags').selectedOptions;
-    //     var tags = Array.from(v).map(({ value }) => value);
-    //     var elem = this;
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                // Replace the entire div with the response
+                movie_list.innerHTML = xhr.responseText;
+                // Attach the event listener to each rating link
+                var links = document.querySelectorAll('.movie-rating .card-link');
+                for (var i = 0; i < links.length; i++) {
+                    links[i].addEventListener('click', rateMovie);
+                }
+            } else {
+                alert('Request failed. Returned status of ' + xhr.status);
+            }
+        };
 
-    //     // Create an AJAX request
-    //     var xhr = new XMLHttpRequest();
-    //     xhr.open('POST', '/filter', true);
-    //     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.send(jsonPayload);
+        Searchbar_matches = []; 
 
-    //     // Handle the response
-    //     xhr.onload = function() {
-    //         if (xhr.status === 200) {
-    //             elem.disabled = false;
-    //             elem.style.color = "black"
-    //             filter_text.textContent = "Apply filters";
-    //             window.history.pushState('page2', 'Title', window.location.pathname + '?genres=' + genres + '&tags=' + tags);
-                
-    //             setInnerHTML(movie_list, xhr.responseText);
-    //             // movie_list.innerHTML = xhr.responseText;
-    //             movie_list = document.getElementById("movie_list");
-                
-                
-    //         } else {
-    //             alert('Request failed. Returned status of ' + xhr.status);
-    //             elem.disabled = false;
-    //             elem.style.color = "black"
-    //             filter_text.textContent = "Apply filters";
-    //         }
-    //     };
-
-
-    //     var request_parameters = 'type=' + window.location.pathname
-
-    //     if (genres.length > 0) {
-    //         request_parameters += '&genres=' + genres
-    //     }
-
-    //     if (tags.length > 0) {
-    //         request_parameters += '&tags=' + tags
-    //     }
-
-    //     // Send the request with the parameters
-    //     xhr.send(request_parameters);
-        
-    // });
-        
-
+        }
+    });
+{% endif %}
 
 
 

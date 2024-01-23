@@ -51,6 +51,7 @@ user_manager = UserManager(app, db, User)  # initialize Flask-User management
 # timestamp_of_last_model_fit = time.time()
 data = pd.read_sql("movie_ratings", con=db.get_engine().connect(), index_col=None)
 data = data.rename(columns={"user_id":"user", "movie_id":"item"})
+genre_list = ['Action', 'Adventure', 'Animation', 'Children', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy', 'Film-Noir', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western', '(no genres listed)']
 
 # user_user = UserUser(15, min_nbrs=3) 
 # algo = Recommender.adapt(user_user)
@@ -59,8 +60,8 @@ data = data.rename(columns={"user_id":"user", "movie_id":"item"})
 # create models for recommending once in the beginning and then only update (concurrently) after a new rating was submitted
 algo_popular = basic.Popular()
 algo_bias = bias.Bias()
-algo_user_user = Fallback(UserUser(100), algo_bias).fit(data)
-algo_item_item = Fallback(ItemItem(100), algo_bias).fit(data)
+algo_user_user = Fallback(UserUser(100), algo_bias)
+algo_item_item = Fallback(ItemItem(100), algo_bias)
 # algo_biased_mf = als.BiasedMF(10)
 algo_implicit_mf = als.ImplicitMF(10)
 algo_random = basic.Random()
@@ -87,6 +88,7 @@ print(model_implicit_mf)
 model_random = Recommender.adapt(algo_random).fit(data)
 print(model_random)
 
+model_dict = {"Recommended for you":model_implicit_mf, "Other users also liked":model_user_user, "Based on the movies you liked":model_item_item, "Most popular":model_popular}
 
 
 print("set up recommender")
@@ -98,10 +100,32 @@ results_per_page = 10
 
 app.jinja_env.add_extension(MarkdownExtension)
 
+# INITIALIZE DATABASE & INDEX 
 @app.cli.command('initdb')
 def initdb_command():
+    """Creates the index and the database tables."""
+
+    # WHOOSH INDEX 
+    if not os.path.exists("whoosh_index"):
+        os.mkdir("whoosh_index")
+
+    schema = Schema(id=ID(stored=True), title=TEXT(stored=True), overview=TEXT(stored=True), tag=TEXT(stored=True), review=TEXT(stored=True))
+    ix = create_in("whoosh_index", schema)
+    writer = ix.writer()
+
+    # INDEX MOVIES 
+    for movie in Movie.query.all():
+        r_list = [r.review for r in movie.reviews]
+        merged_r =  "".join(r_list)
+        t_list = [t.tag for t in movie.tags]
+        merged_t =  " ".join(t_list)
+
+        writer.add_document(id=str(movie.id), title=movie.title, overview=movie.blurb, tag=merged_t, review=merged_r)
+
+    writer.commit()
+
+    # DATABASE 
     global db
-    """Creates the database tables."""
     check_and_read_data(db)
     print('Initialized the database.')
 
@@ -113,6 +137,10 @@ def home_page():
 
     
 def get_recommendations(model, user_id, number):
+    q, s = get_recommendations_query(model, user_id, number)
+    return q.all(), s
+
+def get_recommendations_query(model, user_id, number):
     recs = model.recommend(int(user_id), number)
     scores = None
 
@@ -131,7 +159,11 @@ def get_recommendations(model, user_id, number):
     if scores:
         scores = [round((score - 0) / (6 - 0) * 100) for score in scores]
 
-    return Movie.query.filter(Movie.id.in_(movie_ids)).all(), scores
+    return Movie.query.filter(Movie.id.in_(movie_ids)), scores
+
+def get_recommendations(model, user_id, number):
+    q, s = get_recommendations_query(model, user_id, number)
+    return q.all(), s
 
 # The Members page is only accessible to authenticated users via the @login_required decorator
 @app.route('/movies')
@@ -139,7 +171,7 @@ def get_recommendations(model, user_id, number):
 def movies_page():
     movies, scores = get_recommendations(model_random, user_id=current_user.id, number=results_per_page)
 
-    return render_movies_template(movies, "movies.html")
+    return render_movies_template(movies, "movies.html", show_recommendation=True, show_search=True)
 
 
 # The Members page is only accessible to authenticated users via the @login_required decorator
@@ -147,55 +179,48 @@ def movies_page():
 @login_required  # User must be authenticated
 def recommendations_page():
     """ Recommendation functionality """
+    if not 'recommender' in request.args:
+        return "No recommender choice provided", 400
+    else:
+        try:
+            recommender = request.args['recommender']
+        except ValueError:
+            return "Malformed request parameters provided", 400
 
-    if request.method == 'POST':
-        
-        # GET filter options 
-        user_id = request.form.get('user_id')
-        tag = request.form.get('tag')
-        genre = request.form.get('genre')
-        number = request.form.get('number')
-        algorithm = request.form.get('algorithm')
-        include = request.form.get('include')
-        title = request.form.get('title')
+        model = None
+        genre = None
 
-        # ADAPT values to python 
-        filter_options = [genre, tag]
+        if recommender == "Popular":
+            model = model_popular
+        elif recommender == "Bias":
+            model = model_bias
+        elif recommender == "User":
+            model = model_user_user
+        elif recommender == "Item":
+            model = model_item_item
+        elif recommender == "mf":
+            model = model_implicit_mf
+        elif recommender == "TopGenre":
+            try:
+                genre = request.args['genre']
+            except ValueError:
+                return "Malformed request parameters provided", 400
+            if not genre in genre_list:
+                return "Malformed request parameters provided", 400
+        else:
+            return "Malformed request parameters provided", 400
 
-        for i in range(0, len(filter_options)): 
-
-            # Nothing 
-            if filter_options[i] == "0": 
-                filter_options[i]= []
-
-            # Several
-            elif ',' in filter_options[i]: 
-                filter_options[i] = filter_options[i].split(',')
-
-            # Single  
-            else: 
-               filter_options[i] = [ filter_options[i] ]
-
-
-        # EXCEPTIONS 
-        if number == "0": 
-            number = results_per_page
-
-        if genre == "other": 
-            filter_options[0] = "(no genres listed)"
-
-        
-        # BUILD model  
-        movies, normalized_scores = build_recommender(genre=filter_options[0], tag=filter_options[1], algo=algorithm, number= int(number), include=include, db=db, user_id=int(user_id))  
+        # get recommendations
+        if not genre:
+            q, _ = get_recommendations(model, user_id=current_user.id, number=results_per_page)
+        else:
+            q = filter_best(tag=[], genre=[genre], number=results_per_page, db=db, include="0", user_id=current_user.id)
 
 
-    # q = []
-    # for m in recs['item']:
-    #     m = int(m)
-    #     movie = Movie.query.get(m)
-    #     q.append(movie)
 
-    return render_movies_template(q,  "movies.html")
+
+
+    return render_movies_template(q,  "movies.html", show_recommendation=True)
 
 
 # The Members page is only accessible to authenticated users via the @login_required decorator
@@ -205,6 +230,7 @@ def recommendations_overview():
     # get the movies to show for the different recommendation types
     movies = []
     headings = []
+    types = []
     # # bias based
     # bias_movies, _ = get_recommendations(model_bias, user_id=current_user.id, number=results_per_page)
 
@@ -215,24 +241,30 @@ def recommendations_overview():
     if len(imf_movies)>2:
         movies.append(imf_movies)
         headings.append("Recommended for you")
+        types.append("mf")
 
     # # user-user based
     user_movies, _ = get_recommendations(model_user_user, user_id=current_user.id, number=results_per_page)
     if len(user_movies)>2:
         movies.append(user_movies)
         headings.append("Other users also liked")
+        types.append("User")
 
     # # item-item based
     item_movies, _ = get_recommendations(model_item_item, user_id=current_user.id, number=results_per_page)
     if len(item_movies)>2:
         movies.append(item_movies)
         headings.append("Based on the movies you liked")
+        types.append("Item")
+
 
     # # popular based
     popular_movies, _ = get_recommendations(model_popular, user_id=current_user.id, number=results_per_page)
     if len(popular_movies)>2:
         movies.append(popular_movies)
         headings.append("Most popular")
+        types.append("Popular")
+
 
     # # watch list
     movie_ids = get_watchlist_movies()
@@ -241,6 +273,8 @@ def recommendations_overview():
         movies.append(watchlist_movies)
 
         headings.append("From your watchlist")
+        types.append("watchlist")
+        # TODO 
 
 
     
@@ -249,12 +283,16 @@ def recommendations_overview():
     genre = "Animation"
 
     genre_movies = filter_best(tag=[], genre=[genre], number=results_per_page, db=db, include="0", user_id=current_user.id)
-
+    print(genre, genre_movies, len(genre_movies))
     if len(genre_movies)>2:
         movies.append(genre_movies)
         headings.append("Top rated movies in {}".format(genre))
+        types.append("TopGenre&genre="+genre)
 
-    return render_template("recommendations_overview.html", movies_and_headings=zip(movies, headings))
+    print(movies, headings, types)
+    print(len(movies), len(headings), len(types))
+
+    return render_template("recommendations_overview.html", movies_and_headings=zip(movies, headings, types))
 
 
 
@@ -277,22 +315,61 @@ def more_results():
             print("t2, ", page_number)
             if  'genres' in request.form:
                 genres = request.form.get('genres').split(",")
-            if  'tags' in request. form:
+            if  'tags' in request.form:
                 tags = request.form.get('tags').split(",")
         except ValueError:
             return "Malformed request parameters provided", 400
 
         # the elements to filter vary based on the request type
+
+        print("t3")
         movies = Movie.query
         if request_type == 'movies':
             movies, _ = get_recommendations(model_random, user_id=current_user.id, number=results_per_page*page_number)
         elif request_type == 'watchlist':
             movies =  Movie.query.filter(Movie.id.in_(select(WatchList.movie_id))).limit(results_per_page*page_number).all()
-        # elif request_type == 'recommendations':
-        #     # get recommendations
-        #     movie_ids = get_recommendations_movies()
-        #     # get query of these from the database
-        #     database_for_filtering = Movie.query.filter(Movie.id.in_(movie_ids))
+        elif request_type == 'recommendations':
+            print("r")
+            if not 'recommender' in request.form:
+                return "No recommender choice provided", 400
+            else:
+                try:
+                    recommender = request.form.get('recommender')
+                except ValueError:
+                    return "Malformed request parameters provided", 400
+
+                model = None
+                genre = None
+                print("r1")
+
+                if recommender == "Popular":
+                    model = model_popular
+                elif recommender == "Bias":
+                    model = model_bias
+                elif recommender == "User":
+                    model = model_user_user
+                elif recommender == "Item":
+                    model = model_item_item
+                elif recommender == "mf":
+                    model = model_implicit_mf
+                elif recommender == "TopGenre":
+                    print("r2")
+                    try:
+                        genre = request.form.get('genre')
+                    except ValueError:
+                        return "Malformed request parameters provided", 400
+                    if not genre in genre_list:
+                        print("r3")
+                        return "Malformed request parameters provided", 400
+                else:
+                    return "Malformed request parameters provided", 400
+
+                # get recommendations
+                if not genre:
+                    movies, _ = get_recommendations(model, user_id=current_user.id, number=results_per_page*page_number)
+                else:
+                    movies = filter_best(tag=[], genre=[genre], number=results_per_page*page_number, db=db, include="0", user_id=current_user.id)
+
         else:
             return "Invalid type", 400      
 
@@ -334,13 +411,48 @@ def movie():
             rating = rating.rating
         watchlisted = WatchList.query.filter(WatchList.user_id==current_user.id, WatchList.movie_id==movie.id).first()
 
-        return render_template("movie_detail.html", m=movie, tags=tags, rating=rating, watchlisted=watchlisted, avg_rating=avg_rating, probability=probability)
+        # TODO get similar movies - move this to read data!!!
+        with open("secrets/tmdb_api.txt", "r") as file:
+            api_key = file.read()
+        # request data for the movie https://api.themoviedb.org/3/movie/{movie_id}/similar
+        response = requests.get("https://api.themoviedb.org/3/movie/{}/similar?api_key={}".format(movie.links[0].tmdb_id, api_key))
+        
+        similar_movies = []
+        try:
+            if response.json()['results']:
+
+                results = response.json()['results']
+                
+                for m in results:
+                    m_id = m['id']
+                    print(m_id)
+                    db_id = MovieLinks.query.filter(MovieLinks.tmdb_id==m_id).first()
+                    if db_id:
+                        print("appending: ", db_id)
+                        similar_movies.append(Movie.query.get(db_id.id))
+        except KeyError:
+            pass
+
+        return render_template("movie_detail.html", m=movie, tags=tags, rating=rating, watchlisted=watchlisted, avg_rating=avg_rating, probability=probability, similar_movies=similar_movies)
 
 @app.route('/watchlist')
 @login_required  # User must be authenticated
 def watchlist_page():    
     movie_ids = get_watchlist_movies()
     q = Movie.query.filter(Movie.id.in_(movie_ids))
+
+    return render_movies_template(q, "movies.html", show_more=False)
+
+@app.route('/rated-movies')
+@login_required  # User must be authenticated
+def rated_page():    
+    ratings = MovieRating.query.filter(MovieRating.user_id==current_user.id).with_entities(MovieRating.movie_id).all()
+    movie_ids = np.array(ratings).flatten()
+    print("ms", movie_ids.tolist())
+    for i in  movie_ids.tolist():
+        print(type(i), i)
+    q = Movie.query.filter(Movie.id.in_(movie_ids.tolist()))
+    print(q.all())
 
     return render_movies_template(q, "movies.html", show_more=False)
 
@@ -352,35 +464,95 @@ def movies_page_filtered():
     # String-based templates
     genres = []
     tags = []
+    model = None
+    genre = None
+    movies=""
     
     if not 'type' in request.form:
         return "No type of content to filter provided", 400
     
     else:       
         try:
-            request_type = request.form.get('type')[1:]
+            request_type = request.form.get('type')
             if  'genres' in request.form:
                 genres = request.form.get('genres').split(",")
-            if  'tags' in request. form:
+            if  'tags' in request.form:
                 tags = request.form.get('tags').split(",")
-        except ValueError:
+            if  'algorithm' in request.form:
+                algorithm = request.form.get('algorithm')
+                model = model_dict[algorithm]
+        except (ValueError, KeyError) as e:
             return "Malformed request parameters provided", 400
+
+        show_recommendation = False
+        show_search = False
+        show_more = False
 
         # the elements to filter vary based on the request type
         database_for_filtering = Movie.query
         if request_type == 'movies':
-            database_for_filtering = Movie.query
+            if model:
+                database_for_filtering, _ = get_recommendations_query(model, user_id=current_user.id, number=1000)
+                movies, _ = get_recommendations(model, user_id=current_user.id, number=1000)
+            else:
+                database_for_filtering = Movie.query
+                show_recommendation = True
+                show_search = True
+                show_more = True
+
         elif request_type == 'watchlist':
             database_for_filtering =  Movie.query.filter(Movie.id.in_(select(WatchList.movie_id)))
+
+        elif request_type == 'rated-movies':
+            ratings = MovieRating.query.filter(MovieRating.user_id==current_user.id).with_entities(MovieRating.movie_id).all()
+            movie_ids = np.array(ratings).flatten()
+            database_for_filtering = Movie.query.filter(Movie.id.in_(movie_ids.tolist()))
+
         elif request_type == 'recommendations':
+            print("filter recommendations")
+            show_recommendation = True
+            if not model:
+                print("not model")
+                try:
+                    recommender = request.form.get('recommender')
+                    print("recommender", recommender)
+                    if recommender == "Popular":
+                        model = model_popular
+                    elif recommender == "Bias":
+                        model = model_bias
+                    elif recommender == "User":
+                        model = model_user_user
+                    elif recommender == "Item":
+                        model = model_item_item
+                    elif recommender == "mf":
+                        model = model_implicit_mf
+                    elif recommender == "TopGenre":
+                        try:
+                            genre = request.args['genre']
+                        except ValueError:
+                            return "Malformed request parameters provided", 400
+                        if not genre in genre_list:
+                            return "Malformed request parameters provided", 400
+                    else:
+                        return "Malformed request parameters provided", 400
+                except ValueError:
+                    pass
+            if not model:
+                return "Missing recommender/algorithm for recommendation", 400
+            
             # get recommendations
-            movie_ids = get_recommendations_movies()
-            # get query of these from the database
-            database_for_filtering = Movie.query.filter(Movie.id.in_(movie_ids))
+            if not genre:
+                database_for_filtering, _ = get_recommendations_query(model, user_id=current_user.id, number=1000)
+                movies, _ = get_recommendations(model, user_id=current_user.id, number=1000)
+            else:
+                movies = filter_best(tag=[], genre=[genre], number=1000, db=db, include="0", user_id=current_user.id)
+                movie_ids = [m.id for m in movies]
+                database_for_filtering = Movie.query.filter(Movie.id.in_(movie_ids)) 
+
         else:
             return "Invalid type", 400      
         
-        movies=""
+        
 
         if genres and tags:
             movies = database_for_filtering\
@@ -394,23 +566,7 @@ def movies_page_filtered():
         elif tags:
             movies = database_for_filtering.filter(Movie.tags.any(MovieTag.tag.in_(tags))).limit(results_per_page).all()
 
-        if request_type == 'recommendations' and len(movies)==0:
-            movie_ids = get_recommendations_movies(number_to_recommend=1000)
-            database_for_filtering = Movie.query.filter(Movie.id.in_(movie_ids))
-
-            if genres and tags:
-                movies = database_for_filtering\
-                    .filter(Movie.genres.any(MovieGenre.genre.in_(genres))) \
-                    .filter(Movie.tags.any(MovieTag.tag.in_(tags))) \
-                    .limit(results_per_page).all()
-
-            elif genres:
-                movies = database_for_filtering.filter(Movie.genres.any(MovieGenre.genre.in_(genres))).limit(results_per_page).all()
-
-            elif tags:
-                movies = database_for_filtering.filter(Movie.tags.any(MovieTag.tag.in_(tags))).limit(results_per_page).all()
-
-        return render_movies_template(movies, "movies_list.html")
+        return render_movies_template(movies, "movies_list.html", show_more=show_more, show_recommendation=show_recommendation, show_search=show_search)
 
 def adapt_recommender(algo, data):
     return Recommender.adapt(algo).fit(data)
@@ -421,7 +577,7 @@ def rate_movie():
     """Rate the movie"""
     if not 'm' in request.form:
         return "No movie provided", 400
-    elif not 'r' in request. form:
+    elif not 'r' in request.form:
         return "No rating provided", 400
     else:
         try:
@@ -538,7 +694,7 @@ def get_recommendations_movies(number_to_recommend=results_per_page):
     movie_ids = [movie_id for movie_id in recs['item']]
     return movie_ids
 
-def render_movies_template(movies, template, scores=None, show_more=True):
+def render_movies_template(movies, template, scores=None, show_more=True, show_recommendation=False, show_search=False):
     movie_ids = [movie.id for movie in movies]
     avg = MovieRating.query.order_by(MovieRating.movie_id).group_by(MovieRating.movie_id).with_entities(func.avg(MovieRating.rating)).filter(MovieRating.movie_id.in_(movie_ids)).all()
     movie_ids.sort()
@@ -588,7 +744,7 @@ def render_movies_template(movies, template, scores=None, show_more=True):
     # probabilities = [i for i in range(len(watchlisted))]
     print("movies render", movies)
 
-    return render_template(template, movies_and_tags=zip(movies, all_tags, ratings, watchlisted, average_ratings_sorted, probabilities), genres=db.session.query(MovieGenre.genre).distinct(), tags=db.session.query(MovieTag.tag).distinct(), movie_ids=movie_ids, tag_list=tag_list, genre_list=genre_list, item_list=item_list, probabilities=probabilities, show_more_enabled=show_more)
+    return render_template(template, movies_and_tags=zip(movies, all_tags, ratings, watchlisted, average_ratings_sorted, probabilities), genres=db.session.query(MovieGenre.genre).distinct(), tags=db.session.query(MovieTag.tag).distinct(), movie_ids=movie_ids, tag_list=tag_list, genre_list=genre_list, item_list=item_list, probabilities=probabilities, show_more_enabled=show_more, show_recommendation=show_recommendation, show_search=show_search)
 
 
 
@@ -647,10 +803,42 @@ def get_newly_sorted_items():
                 movie = Movie.query.get(m)
                 q.append(movie)
 
-        print("sorted", q.all())
-
         return render_movies_template(q, "movies_list.html", probabilities)
    
+
+# SEARCHBAR
+@app.route('/searchbar', methods=['POST'])
+@login_required 
+def display_searched_movies():
+    # GET DATA & INDEX  
+    search_term = request.json
+    ix = index.open_dir("whoosh_index")
+
+    # PARSE 
+    with ix.searcher(weighting=scoring.BM25F()) as searcher:
+        title_parser = QueryParser("title", ix.schema, group=OrGroup)
+        description_parser = QueryParser("overview", ix.schema, group=OrGroup)
+        review_parser = QueryParser("review", ix.schema, group=OrGroup)
+        tag_parser = QueryParser("tag", ix.schema, group=OrGroup)
+
+        # QUERY
+        title_query = title_parser.parse(search_term)
+        description_query = description_parser.parse(search_term)
+        review_query = review_parser.parse(search_term)
+        tag_query = tag_parser.parse(search_term)
+        result = searcher.search(tag_query)
+        print(result)
+        combined_query = title_query | description_query | review_query | tag_query
+
+        # RESULTS
+        final_results = searcher.search(combined_query, limit=None)
+        search_results = [{"id": hit["id"], "title": hit["title"], "overview": hit["overview"], "tag" : hit["tag"], "review" : hit["review"]} for hit in final_results]
+        ranked_results = sorted(search_results, key=lambda x: (x["overview"].lower().count(search_term.lower()) + x["title"].lower().count(search_term.lower())), reverse=True)
+            
+        # MOVIES 
+        movies = Movie.query.filter(Movie.id.in_([ r['id'] for r in ranked_results])).all()
+
+        return render_movies_template(movies, "movies_list.html")
 
 # Start development web server
 if __name__ == '__main__':

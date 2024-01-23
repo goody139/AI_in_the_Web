@@ -1,7 +1,6 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
 {% for m,tags,rating,watchlisted,avg_rating,probability in movies_and_tags %}
-
     <div class="panel">
         
         <div class="panel-heading">
@@ -12,8 +11,8 @@
                 <a href="#" class="card-link" data-movieid="{{ m.id }}" data-status="0">♡</a>
                 {% endif %}
             </div>
-            <div class="panel-title pull-left"><b>{{ m.title }}</b></div>
-            <div class="match-probability">{{probability}}% Match</div>
+            <div class="panel-title pull-left"><b><a href="{{ url_for('movie', id=m.id) }}">{{ m.title }}</a></b></div>
+            <div class="match-probability"><b>{{probability}}% Match</b></div>
 
             {% for l in m.links %}
                 <div class="db-links pull-right">
@@ -49,10 +48,29 @@
                         <span class="label label-tag">{{ t }}</span>
                     {% endfor %}
                 </p>
-
+                
+                {% if m.runtime %}
                 <p>
                     <b>Runtime: {{ m.runtime }} minutes</b>
                 </p>
+                {% endif %}
+
+                {% if m.reviews %}
+                <div class="review-container">
+                    <div class="review-header"> Reviews</div>
+                    
+                    <div class="picture-text">
+                        {% for r in m.reviews %}
+                        <div class="review-container"> 
+                            {% markdown %}
+                            {{r.review }}
+                            {% endmarkdown %}       
+                            
+                        </div> <!-- review-container -->
+                        {% endfor %}
+                    </div> <!-- picture-text -->
+                </div> <!-- review-container -->
+                {% endif %}
 
             </div> <!-- movie-information -->       
         </div> <!-- panel-body -->
@@ -67,7 +85,7 @@
             <a href="#" id="{{ m.id }}{{ i }}" class="card-link" data-movieid="{{ m.id }}" data-rating="{{ i }}">☆</a>
             {% endfor %} Stars
             </div>
-
+            
             <div class="average-rating">
                 Average rating: {{ avg_rating }}
             </div>

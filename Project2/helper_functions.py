@@ -120,6 +120,7 @@ def exclude_user_ratings(user_id, db):
     )
 
     return movies_to_exclude
+
 def filter_ratings(tag, genre): 
 
     # INITIALIZE 
@@ -190,10 +191,9 @@ def filter_best(tag, genre, number, db, include, user_id):
             genres_filter if genres_filter is not None else default_value), 
             ~Movie.id.in_([movie.id for movie in exclude_user_ratings(user_id, db)])
             )).group_by(Movie.id).order_by(db.func.avg(MovieRating.rating).desc()).all()
-     
-
 
     return movies[:number] 
+
 
 # RECOMMENDER 
 def build_recommender(genre=[], tag=[], algo="0", number=10, user_id="", include="0", db=""):
