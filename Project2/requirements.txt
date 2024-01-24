@@ -2,4 +2,8 @@ flask
 flask-sqlalchemy
 flask-user==1.0.2.2
 jinja_markdown2
+lenskit
+whoosh
+pandas
+scipy
 # tbb #use conda to install

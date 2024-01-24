@@ -340,14 +340,50 @@ input {
     margin-left: 20px;
 }
 
-.picture-text {
-    max-width: 500px;
+.video-container {
+    /* flex: 1;
+    flex-basis: 80%; */
+    width: 98%;
+    border-radius: 8px;
+    margin: 10px; 
+}
+
+.video-container {
+    /* flex: 1;
+    flex-basis: 80%; */
+    width: 98%;
+    border-radius: 8px;
+    margin: 10px; 
     padding: 20px;
-    height: 200px; /* Höhe des Inhalts anpassen, um das Scrollen zu ermöglichen */ /* oder eine andere maximale Breite, die deinem Layout entspricht */
-    color: white;
-    overflow-y: auto;
-    scrollbar-width: thin; /* Firefox */
-    scrollbar-color: darkgray lightgray; 
+    /* max-width : 500px; */
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: scroll;  /* Enable horizontal scrolling */
+    margin-top: 5px; /* Adjust the top margin as needed */
+    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+}
+
+.video-container iframe {
+    margin-right: 10px;  /* Adjust the right margin between videos as needed */
+}
+
+.video-container::-webkit-scrollbar {
+    display: none; /* Verstecke die Scrollleiste für Webkit-basierte Browser (wie Chrome und Safari) */
+}
+
+.video-container-content {
+    scrollbar-width: none;
+}
+
+.picture-text {
+            width: 100%;
+            padding: 20px;
+            height: 200px; /* Höhe des Inhalts anpassen, um das Scrollen zu ermöglichen */ /* oder eine andere maximale Breite, die deinem Layout entspricht */
+            color: white;
+            overflow-y: auto;
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: darkgray lightgray; 
 }
 
 .review-container {
@@ -393,24 +429,14 @@ label ::before{
     padding-bottom: 20px;
 }
 
-.recommendation-row {
-
-    overflow: scroll;
-}
 .movie-view {
     display: inline;
     padding: 10px;
 }
 
 .recommendation-row {
-    overflow: auto;
+    overflow: scroll;
     white-space: nowrap;
-}
-
-.movie-view {
-    display: inline-block;
-    vertical-align:top;
-    margin-right: 10px;
 }
   
 .match-probability {
@@ -447,15 +473,12 @@ label ::before{
     width: fit-content;
     height: fit-content;
     display: inline;
+    padding-left: 2%;
 }
 
 .movie-ratings {
-    background-color: blue;
-    width: fit-content;
-    display: inline;
-    float: inline-end;
     font-size: x-large;
-    padding-left: 2%;
+    margin: 1%;
 }
 
 .movie-probability{
@@ -488,24 +511,22 @@ label ::before{
 }
 
 .movie-body {
-    margin: 5%;
-    background-color: red;
-    border-color: #04AA6D;
+    margin: 2%;
     border-radius: 8px;
 
 }
 
 
 .movie-links {
-    background-color: #04AA6D;
-    width: fit-content;    
+    width: fit-content;   
+    height: 100%; 
     white-space: nowrap;
     margin: 1%;
     padding-right: 5%;
 }
 
 .movie-links img{
-    height: 25px;
+    height: 2em;
     padding-left: 5%;
     padding-right: 0;
     display: inline-block;

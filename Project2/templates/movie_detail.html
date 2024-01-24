@@ -39,7 +39,7 @@
 
 
         {% if rating %}
-        <div class="movie-ratings ratings-div">
+        <div class="movie-ratings ratings-div pull-right">
             <div class="movie-rating">Rated:
             {% for i in range(1, rating+1) %}
             <a href="#" id="{{ m.id }}{{ i }}" class="card-link" data-movieid="{{ m.id }}" data-rating="{{ i }}">⭐</a>
@@ -51,7 +51,7 @@
 
         </div>
         {% else %}
-        <div class="movie-ratings ratings-div">
+        <div class="movie-ratings ratings-div pull-right">
             <div class="movie-rating">Rate:
             <a href="#" id="{{m.id}}1" class="card-link" data-movieid="{{ m.id }}" data-rating="1">☆</a>
             <a href="#" id="{{m.id}}2" class="card-link" data-movieid="{{ m.id }}" data-rating="2">☆</a>
@@ -63,6 +63,7 @@
             
         </div>
         {% endif %}
+        <div class="clearfix"></div>
         <hr>
         <hr>
 
@@ -86,45 +87,43 @@
                 {% endfor %}
             </p>
 
+            {% if m.runtime %}
             <p>
                 <b>Runtime: {{ m.runtime }} minutes</b>
             </p>
+            {% endif %}
 
-            
+            {% if m.reviews %}
+                <div class="review-container">
+                    <div class="review-header"> Reviews</div>
+                    
+                    <div class="picture-text">
+                        {% for r in m.reviews %}
+                        <div class="review-container"> 
+                            {% markdown %}
+                            {{r.review }}
+                            {% endmarkdown %}       
+                            
+                        </div> <!-- review-container -->
+                        {% endfor %}
+                    </div> <!-- picture-text -->
+                </div> <!-- review-container -->
+            {% endif %}
+            <div class="video-container">
+                {% for video_link in m.video_links %}
+                    <iframe width="400" height="315" src="https://www.youtube-nocookie.com/embed/{{ video_link.link }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                {% endfor %}
+            </div>
+
         </div> <!-- movie-information -->       
     </div> <!-- panel-body -->
 
 
-    <hr style="margin-top: 10px; margin-bottom: 10px;">
-
-    <div class="movie-review-container">
-        <div class="review-header"> Reviews</div>
-        
-        <div class="picture-text">
-            {% for r in m.reviews %}
-            <div class="review-container"> 
-                {% markdown %}
-                {{r.review }}
-                {% endmarkdown %}       
-                
-            </div> <!-- review-container -->
-            {% endfor %}
-        </div> <!-- picture-text -->
-
-    </div> <!-- review-container -->
-
-    <hr>
-
-    <div class="movie-video-container">
-        {% for video_link in m.video_links %}
-            <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/{{video_link.link}}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-        {% endfor %}
-    </div>
 
     <hr>
 
     <div class="recommendation-class" class="panel">
-        ><h2>Similar movies</h2>
+        <h2>Similar movies</h2>
         <div class="recommendation-row">
             {% for movie in similar_movies %}
                 <div class="movie-view">
@@ -140,8 +139,119 @@
 
 </div>
 
+<script>
+    // Function to handle the click event on any rating link
+    function rateMovie(event) {
+        event.preventDefault(); // Prevent the default anchor action
 
+        var movieid = this.getAttribute('data-movieid');
+        var rating = this.getAttribute('data-rating');
+        var elem_rate = this;
 
+        // Create an AJAX request
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', "{{ url_for('rate_movie') }}", true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        // Handle the response
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                // Replace the entire div with the response
+                elem_rate.parentElement.innerHTML = xhr.responseText;
+                // Attach the event listener to each rating link
+                var links = document.querySelectorAll('.movie-rating .card-link');
+                for (var i = 0; i < links.length; i++) {
+                    links[i].addEventListener('click', rateMovie);
+                }
+            } else {
+                alert('Request failed. Returned status of ' + xhr.status);
+            }
+        };
+
+        // Send the request with the movie ID and the rating
+        xhr.send('m=' + movieid + '&r=' + rating);
+    }
+
+    function updateRatingView(event) {
+        event.preventDefault(); // Prevent the default anchor action
+
+        var movieid = this.getAttribute('data-movieid');
+        var rating = this.getAttribute('data-rating');
+        var elem_rating = this;
+
+        // Create an AJAX request
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', "{{ url_for('ratings') }}", true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        // Handle the response
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                // Replace the entire div with the response
+                elem_rating.parentElement.innerHTML = xhr.responseText;
+                // Attach the event listener to each rating link
+                var links = document.querySelectorAll('.movie-rating .card-link');
+                for (var i = 0; i < links.length; i++) {
+                    links[i].addEventListener('click', rateMovie);
+                    if(links[i].id!=elem_rating.id) {
+                        links[i].addEventListener("mouseenter", updateRatingView);
+                    }
+                }
+            } else {
+                alert('Request failed. Returned status of ' + xhr.status);
+            }
+        };
+
+        // Send the request with the movie ID and the rating
+        xhr.send('m=' + movieid + '&r=' + rating);
+    }
+
+    function changeWatchlist(event) {
+        event.preventDefault(); // Prevent the default anchor action
+
+        var movieid = this.getAttribute('data-movieid');
+        var current_status = this.getAttribute('data-status');
+        var elem_watch = this;
+
+        // Create an AJAX request
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', "{{ url_for('toggle_watchlist') }}", true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        // Handle the response
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                // Replace the entire div with the response
+                elem_watch.parentElement.innerHTML = xhr.responseText;
+                // Attach the event listener to each rating link
+                var links = document.querySelectorAll('.watchlist .card-link');
+                for (var i = 0; i < links.length; i++) {
+                    links[i].addEventListener('click', changeWatchlist);
+                }
+            } else {
+                alert('Request failed. Returned status of ' + xhr.status);
+            }
+        };
+
+        // Send the request with the movie ID
+        xhr.send('m=' + movieid);
+    }
+
+    // Attach the event listener to each rating link
+    var links = document.querySelectorAll('.movie-rating .card-link');
+
+    for (var i = 0; i < links.length; i++) {
+        links[i].addEventListener('click', rateMovie);
+        links[i].addEventListener("mouseenter", updateRatingView);
+    }
+
+    var links = document.querySelectorAll('.watchlist .card-link');
+
+    for (var i = 0; i < links.length; i++) {
+        links[i].addEventListener('click', changeWatchlist);
+    }
+
+</script>
 
 
 {% endblock %}

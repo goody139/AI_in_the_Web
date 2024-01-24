@@ -119,7 +119,7 @@
 
         // Create an AJAX request
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/rating', true);
+        xhr.open('POST', "{{ url_for('rate_movie') }}", true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         // Handle the response
@@ -150,7 +150,7 @@
 
         // Create an AJAX request
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/ratings', true);
+        xhr.open('POST', "{{ url_for('ratings') }}", true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         // Handle the response
@@ -184,7 +184,7 @@
 
         // Create an AJAX request
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/watchlist_change', true);
+        xhr.open('POST', "{{ url_for('toggle_watchlist') }}", true);
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         // Handle the response
@@ -202,7 +202,7 @@
             }
         };
 
-        // Send the request with the movie ID and the rating
+        // Send the request with the movie ID
         xhr.send('m=' + movieid);
     }
     
