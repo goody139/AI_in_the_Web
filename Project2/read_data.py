@@ -11,25 +11,21 @@ def get_tmdb_data_for_movie(tmdb_id, apikey_path="secrets/tmdb_api.txt"):
     with open(apikey_path, "r") as file:
         api_key = file.read()
     # request data for the movie
-    response = requests.get("https://api.themoviedb.org/3/movie/{}?api_key={}&append_to_response=videos,reviews".format(tmdb_id, api_key))
+    response = requests.get("https://api.themoviedb.org/3/movie/{}?api_key={}&append_to_response=videos,reviews,similar".format(tmdb_id, api_key))
     while response.status_code == 429:
         sleep(1)
-        response = requests.get("https://api.themoviedb.org/3/movie/{}?api_key={}&append_to_response=videos,reviews".format(tmdb_id, api_key))
+        response = requests.get("https://api.themoviedb.org/3/movie/{}?api_key={}&append_to_response=videos,reviews,similar".format(tmdb_id, api_key))
     return response
 
 
 def check_and_read_data(db):
     # check if we have movies in the database
     # read data if database is empty
-
-    print("baum")
     
     # MOVIES 
     if Movie.query.count() == 0:
-        print("baum2")
         # read movies from csv
         with open('data/movies.csv', newline='', encoding='utf8') as csvfile:
-            print("baum3")
             reader = csv.reader(csvfile, delimiter=',')
             count = 0
             for row in reader:
@@ -118,6 +114,20 @@ def check_and_read_data(db):
                                     try: 
                                         v = VideoLink(movie_id=movie_id, link=video.get('key'))
                                         db.session.add(v)
+                                    except KeyError:
+                                        pass
+                        except KeyError:
+                            pass
+
+                        try:
+                            if r.json()['similar']:
+                                data = r.json()
+                                sim_results = data.get('similar', []).get('results', [])
+                                for sim_movie_id in sim_results:
+                                    m_id = sim_movie_id['id']
+                                    try: 
+                                        sim_movie = SimilarMovie(query_tmdb_id=tmdb_id, sim_movie_tmdb_id=m_id)
+                                        db.session.add(sim_movie)
                                     except KeyError:
                                         pass
                         except KeyError:

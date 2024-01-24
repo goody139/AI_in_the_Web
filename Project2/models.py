@@ -85,3 +85,9 @@ class VideoLink(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), nullable=False)
     link = db.Column(db.String(255), nullable=False, server_default='')
+
+class SimilarMovie(db.Model):
+    __tablename__ = 'similar_movies'
+    id = db.Column(db.Integer, primary_key=True)
+    query_tmdb_id = db.Column(db.Integer, nullable=False)
+    sim_movie_tmdb_id = db.Column(db.Integer, nullable=False)

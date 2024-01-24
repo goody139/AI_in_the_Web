@@ -90,8 +90,11 @@ db.create_all()
 user_manager = UserManager(app, db, User)  
 
 # FIT ALL MODELS BEFORE STARTING APP 
-#model_popular, model_bias, model_user_user, model_item_item, model_implicit_mf, model_random, algos = fit_models()
-#model_dict = {"Recommended for you":model_implicit_mf, "Other users also liked":model_user_user, "Based on the movies you liked":model_item_item, "Most popular":model_popular}
+try:
+    model_popular, model_bias, model_user_user, model_item_item, model_implicit_mf, model_random, algos = fit_models()
+    model_dict = {"Recommended for you":model_implicit_mf, "Other users also liked":model_user_user, "Based on the movies you liked":model_item_item, "Most popular":model_popular}
+except ValueError:
+    print("Warning: empty database")
 
 # SET VARIABLES 
 MKL_THREADING_LAYER = "tbb" # Lenskit variable to make code more efficient 
@@ -102,7 +105,18 @@ app.jinja_env.add_extension(MarkdownExtension)
 # INITIALIZE DATABASE & INDEX 
 @app.cli.command('initdb')
 def initdb_command():
-    """Creates the index and the database tables."""
+    """Creates the database table."""
+    
+    # DATABASE 
+    global db
+    check_and_read_data(db)
+
+    print('Initialized the database.')
+
+# INITIALIZE DATABASE & INDEX 
+@app.cli.command('initindex')
+def initdb_command():
+    """Creates the index."""
 
     # WHOOSH INDEX 
     if not os.path.exists("whoosh_index"):
@@ -122,12 +136,7 @@ def initdb_command():
         writer.add_document(id=str(movie.id), title=movie.title, overview=movie.blurb, tag=merged_t, review=merged_r)
 
     writer.commit()
-
-    # DATABASE 
-    global db
-    check_and_read_data(db)
-
-    print('Initialized the database.')
+    print('Initialized the index.')
 
 # HOME PAGE 
 @app.route('/')
@@ -370,29 +379,27 @@ def movie():
             rating = rating.rating
         watchlisted = WatchList.query.filter(WatchList.user_id==current_user.id, WatchList.movie_id==movie.id).first()
 
-        # TODO get similar movies - move this to read data!!!
-        with open("secrets/tmdb_api.txt", "r") as file:
-            api_key = file.read()
-        # request data for the movie https://api.themoviedb.org/3/movie/{movie_id}/similar
-        response = requests.get("https://api.themoviedb.org/3/movie/{}/similar?api_key={}".format(movie.links[0].tmdb_id, api_key))
+        # # TODO get similar movies - move this to read data!!!
+        # with open("secrets/tmdb_api.txt", "r") as file:
+        #     api_key = file.read()
+        # # request data for the movie https://api.themoviedb.org/3/movie/{movie_id}/similar
+        # response = requests.get("https://api.themoviedb.org/3/movie/{}/similar?api_key={}".format(movie.links[0].tmdb_id, api_key))
         
         similar_movies = []
         try:
-            if response.json()['results']:
-
-                results = response.json()['results']
-                
-                for m in results:
-                    m_id = m['id']
-                    print(m_id)
-                    db_id = MovieLinks.query.filter(MovieLinks.tmdb_id==m_id).first()
-                    if db_id:
-                        print("appending: ", db_id)
-                        print("appending: ", db_id)
-                        sim_movie = Movie.query.get(db_id.id)
-                        if sim_movie:
-                            print("appending: ", sim_movie)
-                            similar_movies.append(sim_movie)
+            results = SimilarMovie.query.filter(SimilarMovie.query_tmdb_id==movie.links[0].tmdb_id).all()
+            
+            for m in results:
+                m_id = m.sim_movie_tmdb_id
+                print(m_id)
+                db_id = MovieLinks.query.filter(MovieLinks.tmdb_id==m_id).first()
+                if db_id:
+                    print("appending: ", db_id)
+                    print("appending: ", db_id)
+                    sim_movie = Movie.query.get(db_id.id)
+                    if sim_movie:
+                        print("appending: ", sim_movie)
+                        similar_movies.append(sim_movie)
         except KeyError:
             pass
 

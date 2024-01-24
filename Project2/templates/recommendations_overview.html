@@ -8,7 +8,7 @@
 <div id="recommendation-container">
     {% for movies, heading, type in movies_and_headings %}
         <div class="recommendation-class" class="panel">
-            <a href="/recommendations?recommender={{type}}"><h2>{{ heading }}</h2> </a>
+            <a href="{{ url_for('recommendations_page', recommender=type) }}"><h2>{{ heading }}</h2> </a>
             <div class="recommendation-row">
                 {% for m in movies %}
                     <div class="movie-view">

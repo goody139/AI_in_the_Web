@@ -558,3 +558,10 @@ hr {
     margin-left: 500px; / Abstand nach links anpassen /
     display: block; / Stellt sicher, dass das Input-Feld als Blockelement behandelt wird */
 }
+
+.v_sep {
+    border-left: 1px solid white;
+    padding-left: 1%;
+    margin-right: 1%;
+    height: 100%;
+}

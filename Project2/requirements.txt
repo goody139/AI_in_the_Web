@@ -6,4 +6,5 @@ lenskit
 whoosh
 pandas
 scipy
+requests
 # tbb #use conda to install
