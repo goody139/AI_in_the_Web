@@ -23,23 +23,23 @@ Build a personalized recommender system with these components:
 In the Project2 Folder the .py files and the sqlite data structure can be found. The templates folder contains the html files. The data folder contains the csv files. The static folder contains the style.css file and pictures that are used in our recommender.
 
 ### Usage 
-Navigate to the Project2 Folder and run: flask --app recommender.py run. If you haven't initialized the database and the index yet, run this command first:  flask --app recommender.py initdb. !Note : initializing the database and index can take a while!
+Navigate to the Project2 Folder and run: flask --app recommender.py run. If you haven't initialized the database and the index yet, run this command first:  flask --app recommender.py initdb. 
+!Note : initializing the database and index can take a while!
 
 ### Features 
 
-    - Watchlist (Favorite Movies)
-    - Prediction dispaly how much a user likes a movie for every movie
-    - Several types of recommendation algorithms 
-    - A filter method for movies (Genre, Tag, Searchbar(searching through: description, title, reviews, tag), Recommendation algorithm)
-    - Apply a descending / ascending order based on certain values (runtime, average rating, title, match)
-    - A Rating functionality 
-    - Display information of movies (movie-poster, links to movie, runtime, description, reviews, average rating)
-    - A detailed view for one single movie (youtube videos, similar movies)
-    - A rated movies & recommendation overview display 
+   - Watchlist (Favorite Movies)
+   - Prediction display how much a user likes a movie for every movie
+   - Several types of recommendation algorithms 
+   - A filter method for movies (Genre, Tag, searchbar(searching for: description, title, reviews, tag), Recommendation algorithm)
+   - Apply a descending / ascending order based on certain values (runtime, average rating, title, match)
+   - A Rating functionality
+   - Display information of movies (movie-poster, links to movie, runtime, description, reviews, average rating)
+   - A view for one movie in detail (youtube videos, similar movies)
+   - A rated movies & recommendation overview display 
 
 ### Preview 
 ![website](link)
-
 ![grafik](link)
 
 
