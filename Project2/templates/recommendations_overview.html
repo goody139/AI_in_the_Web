@@ -1,0 +1,27 @@
+{% extends "flask_user_layout.html" %}
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+<!-- parameters: user_movies, watchlist_movies, genre_movies, genre -->
+
+<div id="recommendation-container">
+    {% for movies, heading, type in movies_and_headings %}
+        <div class="recommendation-class" class="panel">
+            <a href="{{ url_for('recommendations_page', recommender=type) }}"><h2>{{ heading }}</h2> </a>
+            <div class="recommendation-row">
+                {% for m in movies %}
+                    <div class="movie-view">
+                        <a href="{{ url_for('movie', id=m.id) }}">
+                            <img src="{{ m.poster_path }}" alt="Poster for {{m.title}}" width="150vw"> 
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+
+</div>
+
+
+{% endblock %}

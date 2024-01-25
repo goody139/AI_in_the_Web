@@ -1,0 +1,567 @@
+/* dak color theme */
+
+body {
+    background-color: #121212;
+    color: rgb(255 255 255 / 85%)
+}
+
+h1 {
+    color: #dffabf;
+}
+
+
+
+
+.panel{
+    background-color:rgb(255 255 255 / 5%);
+}
+
+.panel-heading, .panel-footer{
+    background-color:rgb(255 255 255 / 7%);
+}
+
+.label {
+    height: fit-content;
+    padding: 4px 2px 2px 2px ;
+    color: black;
+}
+
+.label-genre {
+    background-color: #c2fabf;
+}
+
+.label-tag {
+    background-color: #d9bffa;
+}
+
+.watchlist {
+    padding-right: 1em;
+}
+
+
+.db-links {
+    width: fit-content;    
+    white-space: nowrap;
+    padding-right: 5%;
+}
+
+.db-links img{
+    height: 20px;
+    padding-left: 5%;
+    padding-right: 0;
+    display: inline-block;
+
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+.wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.static-header, .static-footer {
+    background-color:rgb(255 255 255 / 5%);
+}
+.scrollable-body {
+    flex: 1;
+    overflow: auto;
+}
+
+
+.panel-body img {
+    float: left;
+    width: 25%
+}
+
+.movie-information {
+    float: left;
+    width: 75%;
+    padding-left: 1.2em;
+}
+
+
+
+label {
+    width: fit-content;
+    display: inline;    
+}
+
+.select-label {
+    width: fit-content;
+    display: block;    
+}
+
+select {
+    box-shadow: inset 1px 1px 3px #000000;
+    border-radius: 5px;
+    border-color: rgb(255 255 255 / 7%);
+    appearance: none;
+    background-color: rgb(255 255 255 / 5%);
+    width: fit-content;
+    display: inline;
+}
+
+select[multiple] option:checked {
+    background: linear-gradient(0deg, #d9bffa 0%, #d9bffa 100%);
+    color: #000000;
+}
+
+
+.select-wrapper {
+    padding: 1em;
+    float: left;
+    width: fit-content;
+    height: fit-content;
+    display: inline;
+}
+
+.select-container {
+    display: block;
+}
+
+#filter_form input{
+    display: inline;
+    background-color: #d9bffa;
+    color: #000000;
+    border-radius: 5px;
+    border-width: 0;
+    padding-top: 4px;
+    margin: 1em;
+}
+
+.sort-container .select-wrapper{
+    float: right;
+}
+
+.sort-container input {
+    padding-left: 20px;
+    display: inline;
+    
+}
+
+.sort-container label {
+    display: inline;
+}
+
+#sort_mode_container {
+    margin: 1em;
+    padding: 4px 2px 2px 2px;
+    float: right;
+}
+
+#sort_mode{
+    -webkit-appearance: initial;
+    appearance: initial;
+    position: relative;
+    content: "\2713";
+    color: #fff;
+}
+
+#sort_mode:checked:after {
+    content: "\25BC"; /* descending: triangle pointing down*/
+    color: #fff;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%,-50%);
+    -moz-transform: translate(-50%,-50%);
+    -ms-transform: translate(-50%,-50%);
+    transform: translate(-50%,-50%);
+}
+
+#sort_mode:after {
+    content: "\25B2"; /* ascending: triangle pointing up */
+    color: #fff;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%,-50%);
+    -moz-transform: translate(-50%,-50%);
+    -ms-transform: translate(-50%,-50%);
+    transform: translate(-50%,-50%);
+}
+
+#sort_by option {
+    background-color: #1E1E1E;
+}
+
+#sort_by option:checked {
+    background-color: #d9bffa;
+    color: black;
+}
+
+.movie-rating {
+    display: inline;
+}
+
+.average-rating {
+    display: inline;
+    float: inline-end;
+}
+
+button {
+    display: inline;
+    margin-left: 1em;
+    background-color: #d9bffa;
+    color: #000000;
+    border-radius: 5px;
+    border-color: #d9bffa;
+}
+
+
+/* Stil für das select-Element */
+#filterView {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+.filterOption {
+        padding: 5px 10px;
+        background-color: #c2fabf;
+        border-radius: 5px;
+        cursor: pointer;
+        color: black;
+}
+
+
+/* Dropdown Button */
+.dropbtn {
+    background-color: #c2fabf;
+    color: black;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+}
+  
+  /* Dropdown button on hover & focus */
+.dropbtn:hover, .dropbtn:focus {
+    background-color: #3e8e41;
+}
+  
+#myInputTitle {
+    box-sizing: border-box;
+    background-position: 10px 10px;
+    background-repeat: no-repeat;
+    font-size: 16px;
+    padding: 14px 20px 12px 45px;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    width: 300px; /* Ändere die Breite nach Bedarf */
+    margin: 0 auto; /* Zentriert das Element horizontal */
+    margin-top: 120px; /* Abstand nach unten anpassen */
+    margin-left: 500px; /* Abstand nach links anpassen */
+    display: block; /* Stellt sicher, dass das Input-Feld als Blockelement behandelt wird */
+}
+
+
+input {
+    color: black;
+}
+
+/* The search field */
+#myInput {
+    box-sizing: border-box;
+    background-position: 10px 10px;
+    background-repeat: no-repeat;
+    font-size: 16px;
+    padding: 14px 20px 12px 45px;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    width: 100px;
+}
+
+/* The search field when it gets focus/clicked on */
+#myInput:focus {outline: 3px solid #ddd;}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+  position: relative;
+  display: inline-block;
+  margin-right: 75px; 
+  width : fit-content;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f6f6f6;
+  width: fit-content;
+  border: 1px solid #ddd;
+  z-index: 1;
+}
+
+.select{
+    width: fit-content; /* Setze die Breite nach Bedarf */
+    white-space: normal;
+}
+.selector{
+    scrollbar-width: thin;
+    width: fit-content; /* Setze die Breite nach Bedarf */
+    white-space: normal;
+}
+
+.dropdown-content>select{
+    width:fit-content;;
+}
+.dropdown-content> select > option:checked {
+    color: grey;
+}
+
+/* Links inside the dropdown */
+.dropdown-content > select > option {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  width: fit-content;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content option:hover {background-color: #f1f1f1}
+
+
+.show {display:block;} 
+
+
+.picture-container {
+    display: flex;
+    align-items: left;
+}
+
+.picture-image {
+    max-width: 400px; /* oder eine andere maximale Breite, die deinem Layout entspricht */
+    margin-right: 40px; /* Abstand zwischen Bild und Text */
+    margin-left: 20px;
+}
+
+.video-container {
+    /* flex: 1;
+    flex-basis: 80%; */
+    width: 98%;
+    border-radius: 8px;
+    margin: 10px; 
+}
+
+.video-container {
+    /* flex: 1;
+    flex-basis: 80%; */
+    width: 98%;
+    border-radius: 8px;
+    margin: 10px; 
+    padding: 20px;
+    /* max-width : 500px; */
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: scroll;  /* Enable horizontal scrolling */
+    margin-top: 5px; /* Adjust the top margin as needed */
+    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+}
+
+.video-container iframe {
+    margin-right: 10px;  /* Adjust the right margin between videos as needed */
+}
+
+.video-container::-webkit-scrollbar {
+    display: none; /* Verstecke die Scrollleiste für Webkit-basierte Browser (wie Chrome und Safari) */
+}
+
+.video-container-content {
+    scrollbar-width: none;
+}
+
+.picture-text {
+            width: 100%;
+            padding: 20px;
+            height: 200px; /* Höhe des Inhalts anpassen, um das Scrollen zu ermöglichen */ /* oder eine andere maximale Breite, die deinem Layout entspricht */
+            color: white;
+            overflow-y: auto;
+            scrollbar-width: thin; /* Firefox */
+            scrollbar-color: darkgray lightgray; 
+}
+
+.review-container {
+    background-color: rgb(255 255 255 / 7%);
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    width : 200 px
+}
+
+.content-container {
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+
+.review-header {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: white;
+}
+
+.review-content {
+    line-height: 1.6;
+}
+
+
+label{
+    grid-column: 1 / 2;
+}
+
+label ::before{
+    grid-column: 1 / 2;
+}
+
+
+.recommendation-class {
+    padding-left: 10%;
+    padding-right: 10%;
+    padding-bottom: 20px;
+}
+
+.movie-view {
+    display: inline;
+    padding: 10px;
+}
+
+.recommendation-row {
+    overflow: scroll;
+    white-space: nowrap;
+}
+  
+.match-probability {
+    display: inline;
+    color:#04AA6D;
+    margin-left: 2%;
+}
+
+.movie-detail-link {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+
+.movie-body img {
+    float: left;
+    width: 25%
+}
+
+
+.movie-title {
+    margin: 10px;
+    font-size: xx-large;
+    width: fit-content;
+    display: inline;
+}
+
+.movie-watchlist {
+    font-size: xx-large;
+    width: fit-content;
+    height: fit-content;
+    display: inline;
+    padding-left: 2%;
+}
+
+.movie-ratings {
+    font-size: x-large;
+    margin: 1%;
+}
+
+.movie-probability{
+    font-size: x-large;
+    display: inline;
+    color:#04AA6D;
+    margin-left: 2%;
+}
+.movie-avg{
+    font-size: xx-large;
+    display: inline;
+    color:white;
+    margin-left: 2%;
+    float: inline-end;
+}
+
+.movie-review-container {
+    display: block;
+    background-color: pink;
+    margin: 5%;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    width : 200 px
+}
+.movie-panel {
+    margin: 5%;
+    padding: 1%;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.movie-body {
+    margin: 2%;
+    border-radius: 8px;
+
+}
+
+
+.movie-links {
+    width: fit-content;   
+    height: 100%; 
+    white-space: nowrap;
+    margin: 1%;
+    padding-right: 5%;
+}
+
+.movie-links img{
+    height: 2em;
+    padding-left: 5%;
+    padding-right: 0;
+    display: inline-block;
+
+}
+
+hr {
+    border-color: #3d3d3d;
+}
+
+.movie-video-container {
+    display: inline;
+}
+
+
+
+
+#myInputTitle {
+    box-sizing: border-box;
+    background-position: 10px 10px;
+    background-repeat: no-repeat;
+    font-size: 16px;
+    padding: 14px 20px 12px 45px;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    width: 300px; /* Ändere die Breite nach Bedarf /
+    margin: 0 auto; / Zentriert das Element horizontal /
+    margin-top: 120px; / Abstand nach unten anpassen /
+    margin-left: 500px; / Abstand nach links anpassen /
+    display: block; / Stellt sicher, dass das Input-Feld als Blockelement behandelt wird */
+}
+
+.v_sep {
+    border-left: 1px solid white;
+    padding-left: 1%;
+    margin-right: 1%;
+    height: 100%;
+}

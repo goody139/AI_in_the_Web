@@ -8,6 +8,7 @@
 
     <!-- Bootstrap -->
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
     <!-- In-lining styles to avoid needing a separate .css file -->
     <style>
@@ -31,51 +32,75 @@
 
 <body>
     {% block body %}
-    <div id="header-div" class="clearfix with-margins">
-        <div class="pull-left"><a href="/"><h1 class="no-margins">{{ user_manager.USER_APP_NAME }}</h1></a></div>
-        <div class="pull-right">
-            {% if call_or_get(current_user.is_authenticated) %}
-                <a href="{{ url_for('user.edit_user_profile') }}">{{ current_user.username or current_user.email }}</a>
-                &nbsp; | &nbsp;
-                <a href="{{ url_for('user.logout') }}">{%trans%}Sign out{%endtrans%}</a>
-            {% else %}
-                <a href="{{ url_for('user.login') }}">{%trans%}Sign in{%endtrans%}</a>
-            {% endif %}
-        </div>
-    </div>
-    {% block menu %}
-    <div id="menu-div" class="with-margins">
-        <a href="/">{%trans%}Home page{%endtrans%}</a>
-    </div>
-    {% endblock %}
-    <hr class="no-margins"/>
-
-    <div id="main-div" class="with-margins">
-    {# One-time system messages called Flash messages #}
-    {% block flash_messages %}
-        {%- with messages = get_flashed_messages(with_categories=true) -%}
-            {% if messages %}
-                {% for category, message in messages %}
-                    {% if category=='error' %}
-                        {% set category='danger' %}
+    <div class="wrapper">
+        <div class="static-header">
+            <div id="header-div" class="clearfix with-margins">
+                <div class="pull-left"><a href="{{ url_for('home_page') }}"><h1 class="no-margins">{{ user_manager.USER_APP_NAME }}</h1></a></div>
+                <div class="pull-right">
+                    {% if call_or_get(current_user.is_authenticated) %}
+                        <a href="{{ url_for('user.edit_user_profile') }}">{{ current_user.username or current_user.email }}</a>
+                        &nbsp; | &nbsp;
+                        <a href="{{ url_for('user.logout') }}">{%trans%}Sign out{%endtrans%}</a>
+                    {% else %}
+                        <a href="{{ url_for('user.login') }}">{%trans%}Sign in{%endtrans%}</a>
                     {% endif %}
-                    <div class="alert alert-{{category}}">{{ message|safe }}</div>
-                {% endfor %}
-            {% endif %}
-        {%- endwith %}
-    {% endblock %}
+                </div> <!-- pull-right -->
+            </div> <!-- static-header -->
+            {% block menu %}
+            <div id="menu-div" class="with-margins">
+                <a style="margin-right: 1%;" href="{{ url_for('home_page') }}">{%trans%}Home page{%endtrans%}</a>
+                <a class="v_sep" href="{{ url_for('recommendations_overview') }}"> {%trans%}Recommendations overview{%endtrans%}</a>
+                <a class="v_sep" href="{{ url_for('watchlist_page') }}"> {%trans%}Watchlist{%endtrans%}</a>
+                <a class="v_sep" href="{{ url_for('movies_page') }}"> {%trans%}Movies{%endtrans%}</a>
+            </div><!-- menu-div -->
+            {% endblock %}
+            <hr class="no-margins"/>
 
-    {% block main %}
-        {% block content %}{% endblock %}
-    {% endblock %}
-    </div>
+            <div id="main-div" class="with-margins">
+            {# One-time system messages called Flash messages #}
+            {% block flash_messages %}
+                {%- with messages = get_flashed_messages(with_categories=true) -%}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            {% if category=='error' %}
+                                {% set category='danger' %}
+                            {% endif %}
+                            <div class="alert alert-{{category}}">{{ message|safe }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {%- endwith %}
+        
+            </div> <!-- main-div -->
+        </div> <!-- static-header -->
+        {% endblock %}
 
-    <br/>
-    <hr class="no-margins"/>
-    <div id="footer-div" class="clearfix with-margins">
-        <div class="pull-left">{{ user_manager.USER_APP_NAME }} {{ user_manager.USER_APP_VERSION }}</div>
-        <div class="pull-right">Just practicing... CogSci Osnabrück 2023</div>
-    </div>
+        <div class="scrollable-body">
+        {% block main %}
+        
+            {% block content %}{% endblock %}
+        
+        {% endblock %}
+        </div> <!-- wrapper -->
+        
+        
+        <div class="static-footer">
+            <hr class="no-margins"/>
+            <div id="footer-div" class="clearfix with-margins">
+                <div class="pull-left">{{ user_manager.USER_APP_NAME }} {{ user_manager.USER_APP_VERSION }}</div>
+                <div class="pull-right" style="padding-left: 1%;">
+                    <img
+                        height="18pt"
+                        src="/static/tmdb_logo_short.svg"
+                        alt="TMDB logo"/>
+                </div>
+                <div class="pull-right" style="width: 60%">
+                    <span style="float: inline-end;">This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.</span>
+                </div>
+            </div><!-- footer-div -->
+        </div><!-- static-footer -->
+
+    </div><!-- wrapper -->
+    
     {% endblock %}
 
 

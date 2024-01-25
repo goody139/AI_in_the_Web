@@ -39,6 +39,7 @@ Navigate to the Project2 Folder and run: flask --app recommender.py run. If you 
 
 ### Preview 
 ![website](link)
+
 ![grafik](link)
 
 

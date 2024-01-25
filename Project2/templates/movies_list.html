@@ -1,0 +1,225 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+{% for m,tags,rating,watchlisted,avg_rating,probability in movies_and_tags %}
+    <div class="panel">
+        
+        <div class="panel-heading">
+            <div class="watchlist pull-left">
+                {% if watchlisted%}
+                <a href="#" class="card-link" data-movieid="{{ m.id }}" data-status="0">♥</a>
+                {% else %}
+                <a href="#" class="card-link" data-movieid="{{ m.id }}" data-status="0">♡</a>
+                {% endif %}
+            </div>
+            <div class="panel-title pull-left"><b><a href="{{ url_for('movie', id=m.id) }}">{{ m.title }}</a></b></div>
+            <div class="match-probability"><b>{{probability}}% Match</b></div>
+
+            {% for l in m.links %}
+                <div class="db-links pull-right">
+                    <a href=https://movielens.org/movies/{{ l.movie_id }}>
+                        <img src="{{ url_for('static', filename='movielens-logo-white.svg') }}" alt="Movielens"> 
+                    </a>
+                    <a href=http://www.imdb.com/title/tt{{ l.imdb_id }}>
+                        <img src="{{ url_for('static', filename='IMDb.png') }}" alt="IMDb">
+                    </a>
+                    <a href=https://www.themoviedb.org/movie/{{ l.tmdb_id}}>
+                        <img src="{{ url_for('static', filename='TMDB.png') }}" alt="TMDB">
+                    </a>
+                </div>
+            {% endfor %}
+
+            <div class="clearfix"></div>
+        </div>
+        <div class="panel-body">
+            
+            <img src="{{ m.poster_path }}"/>
+
+            <div class="movie-information">    
+                <p>{{m.blurb}}</p>
+
+                <br>
+                <p>
+                    {% for g in m.genres %}
+                        <span class="label label-genre">{{ g.genre }}</span>
+                    {% endfor %}
+                </p>
+                <p>
+                    {% for t in tags %}
+                        <span class="label label-tag">{{ t }}</span>
+                    {% endfor %}
+                </p>
+                
+                {% if m.runtime %}
+                <p>
+                    <b>Runtime: {{ m.runtime }} minutes</b>
+                </p>
+                {% endif %}
+
+                {% if m.reviews %}
+                <div class="review-container">
+                    <div class="review-header"> Reviews</div>
+                    
+                    <div class="picture-text">
+                        {% for r in m.reviews %}
+                        <div class="review-container"> 
+                            {% markdown %}
+                            {{r.review }}
+                            {% endmarkdown %}       
+                            
+                        </div> <!-- review-container -->
+                        {% endfor %}
+                    </div> <!-- picture-text -->
+                </div> <!-- review-container -->
+                {% endif %}
+
+            </div> <!-- movie-information -->       
+        </div> <!-- panel-body -->
+
+        {% if rating %}
+        <div class="panel-footer">
+            <div class="movie-rating">Rated:
+            {% for i in range(1, rating+1) %}
+            <a href="#" id="{{ m.id }}{{ i }}" class="card-link" data-movieid="{{ m.id }}" data-rating="{{ i }}">⭐</a>
+            {% endfor %}
+            {% for i in range(rating+1, 5+1) %}
+            <a href="#" id="{{ m.id }}{{ i }}" class="card-link" data-movieid="{{ m.id }}" data-rating="{{ i }}">☆</a>
+            {% endfor %} Stars
+            </div>
+            
+            <div class="average-rating">
+                Average rating: {{ avg_rating }}
+            </div>
+        </div>
+        {% else %}
+        <div class="panel-footer">
+            <div class="movie-rating">Rate:
+            <a href="#" id="{{m.id}}1" class="card-link" data-movieid="{{ m.id }}" data-rating="1">☆</a>
+            <a href="#" id="{{m.id}}2" class="card-link" data-movieid="{{ m.id }}" data-rating="2">☆</a>
+            <a href="#" id="{{m.id}}3" class="card-link" data-movieid="{{ m.id }}" data-rating="3">☆</a>
+            <a href="#" id="{{m.id}}4" class="card-link" data-movieid="{{ m.id }}" data-rating="4">☆</a>
+            <a href="#" id="{{m.id}}5" class="card-link" data-movieid="{{ m.id }}" data-rating="5">☆</a> Stars
+            </div>
+
+            <div class="average-rating">
+                Average rating: {{ avg_rating }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+{% endfor %}
+
+<script>
+    // Function to handle the click event on any rating link
+    function rateMovie(event) {
+        event.preventDefault(); // Prevent the default anchor action
+
+        var movieid = this.getAttribute('data-movieid');
+        var rating = this.getAttribute('data-rating');
+        var elem = this;
+
+        // Create an AJAX request
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', "{{ url_for('rate_movie') }}", true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        // Handle the response
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                // Replace the entire div with the response
+                elem.parentElement.innerHTML = xhr.responseText;
+                // Attach the event listener to each rating link
+                var links = document.querySelectorAll('.movie-rating .card-link');
+                for (var i = 0; i < links.length; i++) {
+                    links[i].addEventListener('click', rateMovie);
+                }
+            } else {
+                alert('Request failed. Returned status of ' + xhr.status);
+            }
+        };
+
+        // Send the request with the movie ID and the rating
+        xhr.send('m=' + movieid + '&r=' + rating);
+    }
+
+    function updateRatingView(event) {
+        event.preventDefault(); // Prevent the default anchor action
+
+        var movieid = this.getAttribute('data-movieid');
+        var rating = this.getAttribute('data-rating');
+        var elem = this;
+
+        // Create an AJAX request
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', "{{ url_for('ratings') }}", true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        // Handle the response
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                // Replace the entire div with the response
+                elem.parentElement.innerHTML = xhr.responseText;
+                // Attach the event listener to each rating link
+                var links = document.querySelectorAll('.movie-rating .card-link');
+                for (var i = 0; i < links.length; i++) {
+                    links[i].addEventListener('click', rateMovie);
+                    if(links[i].id!=elem.id) {
+                        links[i].addEventListener("mouseenter", updateRatingView);
+                    }
+                }
+            } else {
+                alert('Request failed. Returned status of ' + xhr.status);
+            }
+        };
+
+        // Send the request with the movie ID and the rating
+        xhr.send('m=' + movieid + '&r=' + rating);
+    }
+
+    function changeWatchlist(event) {
+        event.preventDefault(); // Prevent the default anchor action
+
+        var movieid = this.getAttribute('data-movieid');
+        var current_status = this.getAttribute('data-status');
+        var elem = this;
+
+        // Create an AJAX request
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', "{{ url_for('toggle_watchlist') }}", true);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        // Handle the response
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                // Replace the entire div with the response
+                elem.parentElement.innerHTML = xhr.responseText;
+                // Attach the event listener to each rating link
+                var links = document.querySelectorAll('.watchlist .card-link');
+                for (var i = 0; i < links.length; i++) {
+                    links[i].addEventListener('click', changeWatchlist);
+                }
+            } else {
+                alert('Request failed. Returned status of ' + xhr.status);
+            }
+        };
+
+        // Send the request with the movie ID
+        xhr.send('m=' + movieid);
+    }
+    
+    var new_movie_ids = {{ movie_ids|safe }};
+    var new_probabilities = {{ probabilities|safe }};
+    
+    // Attach the event listener to each rating link
+    var links = document.querySelectorAll('.movie-rating .card-link');
+    for (var i = 0; i < links.length; i++) {
+        links[i].addEventListener('click', rateMovie);
+        links[i].addEventListener("mouseenter", updateRatingView);
+    }
+
+    var links = document.querySelectorAll('.watchlist .card-link');
+    for (var i = 0; i < links.length; i++) {
+        links[i].addEventListener('click', changeWatchlist);
+    }
+
+</script>
+
