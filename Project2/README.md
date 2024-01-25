@@ -41,7 +41,7 @@ We used the lenskit library for the recommender algorithms, whoosh library for a
    - A rated movies & recommendation overview display 
 
 ### Preview 
-![website](link)
-![grafik](link)
-
+![m](https://github.com/goody139/AI_in_the_Web/assets/72889998/da7a6c41-819e-4fe9-bb54-9091159d3f75)
+![m2](https://github.com/goody139/AI_in_the_Web/assets/72889998/1df157a8-fffe-4cd1-9222-756243a14543)
+![m3](https://github.com/goody139/AI_in_the_Web/assets/72889998/fd47e920-81a4-4750-abea-6c72468aed43)
 
