@@ -768,7 +768,6 @@ def display_searched_movies():
     movie_ids = []
 
     for movie in movies:
-        print(movie.id, str(movie.id), file=sys.stderr)
         tags = np.array([t.tag for t in movie.tags])
         tags, counts = np.unique(tags, return_counts=True)
         sorted_indices = np.argsort(counts)
