@@ -742,15 +742,16 @@ def display_searched_movies():
 
         return render_movies_template(movies, "movies_list.html")
 
-# MOVIE TEMPLATE 
-def render_movies_template(movies, template, scores=None, show_more=True, show_recommendation=False, show_search=False):
+# MOVIE TEMPLATE def render_movies_template(movies, template, scores=None, show_more=True, show_recommendation=False, show_search=Fa>
     """ This function provides all the information to render the movies template """
 
     movie_ids = [movie.id for movie in movies]
-    avg = MovieRating.query.order_by(MovieRating.movie_id).group_by(MovieRating.movie_id).with_entities(func.avg(MovieRating.rating)).filter(MovieRating.movie_id.in_(movie_ids)).all()
+    avg = MovieRating.query.order_by(MovieRating.movie_id).group_by(MovieRating.movie_id).with_entities(func.avg(Mo>
     movie_ids.sort()
+    movies_with_ratings = set(np.array(MovieRating.query.filter(MovieRating.movie_id.in_(movie_ids)).with_entities(>
+    movie_ids = [m_id for m_id in movie_ids if m_id in movies_with_ratings]
     sorted_indices = np.argsort(np.array(avg).flatten())
-    sorted_movies = np.array(movie_ids)[sorted_indices]
+    sorted_movies = np.array(movie_ids)[sorted_indices] 
     average_ratings = dict(zip(map(str, sorted_movies), np.array(avg).flatten()[sorted_indices]))
 
     if not scores:
@@ -765,18 +766,29 @@ def render_movies_template(movies, template, scores=None, show_more=True, show_r
     watchlisted = []
     average_ratings_sorted = []
     movie_ids = []
-    
+
     for movie in movies:
+        print(movie.id, str(movie.id), file=sys.stderr)
         tags = np.array([t.tag for t in movie.tags])
         tags, counts = np.unique(tags, return_counts=True)
         sorted_indices = np.argsort(counts)
         sorted_indices = np.flip(sorted_indices)
         tags = tags[sorted_indices]
         all_tags.append(tags)
-        rating = MovieRating.query.filter(MovieRating.user_id==current_user.id, MovieRating.movie_id==movie.id).order_by(desc(MovieRating.timestamp)).first()
-        on_watchlist = WatchList.query.filter(WatchList.user_id==current_user.id, WatchList.movie_id==movie.id).first()
+        rating = MovieRating.query.filter(MovieRating.user_id==current_user.id, MovieRating.movie_id==movie.id).ord>
+        on_watchlist = WatchList.query.filter(WatchList.user_id==current_user.id, WatchList.movie_id==movie.id).fir>
         watchlisted.append(on_watchlist)
-        average_ratings_sorted.append('{0:.2f}'.format(average_ratings[str(movie.id)]))
+        if movie.id in movies_with_ratings:
+            average_ratings_sorted.append('{0:.2f}'.format(average_ratings[str(movie.id)]))
+        else:
+            average_ratings_sorted.append(None)
+        movie_ids.append(movie.id)
+
+        try:
+            ratings.append(rating.rating)
+        except AttributeError:
+            ratings.append(None)    
+
         movie_ids.append(movie.id)
 
         try:
