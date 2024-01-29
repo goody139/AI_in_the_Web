@@ -295,11 +295,11 @@ def more_results():
 
         # Filter based on request type 
         movies = Movie.query
-        if request_type == 'movies':
+        if 'movies' in request_type:
             movies, _ = get_recommendations(model_random, user_id=current_user.id, number=results_per_page*page_number)
-        elif request_type == 'watchlist':
+        elif 'watchlist' in request_type:
             movies =  Movie.query.filter(Movie.id.in_(select(WatchList.movie_id))).limit(results_per_page*page_number).all()
-        elif request_type == 'recommendations':
+        elif 'recommendations' in request_type:
             if not 'recommender' in request.form:
                 return "No recommender choice provided", 400
             else:
@@ -499,7 +499,7 @@ def movies_page_filtered():
 
         # Check for request type 
         database_for_filtering = Movie.query
-        if request_type == 'movies':
+        if 'movies' in request_type:
             if model:
                 database_for_filtering, _ = get_recommendations_query(model, user_id=current_user.id, number=1000)
                 movies, _ = get_recommendations(model, user_id=current_user.id, number=1000)
@@ -509,15 +509,15 @@ def movies_page_filtered():
                 show_search = True
                 show_more = True
 
-        elif request_type == 'watchlist':
+        elif 'watchlist' in request_type:
             database_for_filtering =  Movie.query.filter(Movie.id.in_(select(WatchList.movie_id)))
 
-        elif request_type == 'rated-movies':
+        elif 'rated-movies' in request_type:
             ratings = MovieRating.query.filter(MovieRating.user_id==current_user.id).with_entities(MovieRating.movie_id).all()
             movie_ids = np.array(ratings).flatten()
             database_for_filtering = Movie.query.filter(Movie.id.in_(movie_ids.tolist()))
 
-        elif request_type == 'recommendations':
+        elif 'recommendations' in request_type:
             show_recommendation = True
             if not model:
                 try:
