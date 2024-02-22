@@ -29,7 +29,7 @@ In the Project3 Folder the .py files for the hub, channels and client can be fou
 Navigate to the Project3 Folder and run: *python hub.py* , after that *python channel.py* , then *flask -app channel.py register* (do this for all channels), then finally *python client.py*.
 
 ### Hint 
-We use the library pygame to play a sound when messages are sent and the re library to handle not allowed inputs from the user. For the hangman game we sample randomly words from the nltk.corpus that should be guessed.
+We use the library pygame to play a sound when messages are sent and the re library to handle not allowed inputs from the user. For the hangman game we sample randomly words from the nltk.corpus that should be guessed. The Message_sound.mp3 is token with a free licence from https://pixabay.com/sound-effects/search/messaging/. 
 
 ### Features 
 
