@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ channel.name }} Channel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+         h2 {
+            color: #333;
+        }
+        h2 {
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
+        p {
+            margin: 0;
+        }
+        a {
+            color: rgb(189, 31, 224)
+        }
+        .message {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .message .sender {
+            font-weight: bold;
+            /* color: rgb(192, 40, 247) */
+        }
+        .message .timestamp {
+            font-size: 12px;
+            color: #888;
+        }
+        form {
+            margin-top: 20px;
+        }
+        form input[type="text"] {
+            width: calc(50% - 10px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        form input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        form input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        /* Stil für das Popup-Fenster */
+        .popup {
+        display : none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        padding: 20px;
+        z-index: 1000; /* Stellen Sie sicher, dass das Popup-Fenster über anderen Inhalten liegt */
+    }
+
+    .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-right: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        #color-container {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to {{ channel.name }}</h1>
+        <p>The Distributed Messenger</p>
+        <a href="{{ url_for('home_page') }}">List of channels</a>
+    </header>
+
+
+    <!-- Popup-Fenster -->
+    <div class="popup" id="popup">
+        <h1> Choose a name and a color for the channel!</h1>
+        <div class="form-group">
+            <label for="name">Your Name:</label>
+            <input type="text" id="name" placeholder="Enter your name">
+        </div>
+        <div class="form-group">
+            <label>Choose your favorite color:</label>
+            <div id="color-container">
+                <!-- Color options will be dynamically generated here -->
+            </div>
+        </div>
+
+        <button onclick="closePopup()">Close</button>
+    </div>
+
+    <div class="container">
+        {% if channel %}
+            <h2>Channel: {{ channel.name }}</h2>
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message">
+                        {% set color = "color: " + message.color %}
+                        <p class="sender" value="User" style="color: {{ message.color }}" >{{ message.sender }}</p>
+                        <p>{{ message.content }}</p>
+                        <p class="timestamp">{{ message.timestamp }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <h2>Channel not found</h2>
+        {% endif %}
+
+        <form action="post" method="post">
+            <input type="hidden" name="channel" value="{{ channel.endpoint | urlencode }}">
+            <label type = "hidden" id = "senderLabel" for="sender" name ="sender" value="User"></label><br>
+            <input type="hidden" name="sender" id="sender"><br> 
+            <!--<label for="content">Message:</label><br> -->
+            <input type="text" name="content" id="content"><br>
+            <input type="hidden" name="color" id="colorField">
+        
+            <!--<input type="submit" value="Post"> -->
+        </form>
+    </div>
+
+
+<script>
+
+
+    var selectedColor = ""; 
+    function selectColor(color) {
+        selectedColor = color;
+        var colorOptions = document.getElementsByClassName("color-option");
+        for (var i = 0; i < colorOptions.length; i++) {
+            colorOptions[i].style.filter = "brightness(100%)"; 
+        }
+        event.target.style.filter = "brightness(80%)"; 
+    }
+
+    // Farbenliste
+    var colors = [
+        { name: "Blue", value: "blue" },
+        { name: "Red", value: "red" },
+        { name: "Green", value: "green" },
+        { name: "Yellow", value: "yellow" },
+        { name: "Orange", value: "orange" },
+        { name: "Purple", value: "purple" },
+        { name: "Pink", value: "pink" },
+        { name: "Cyan", value: "cyan" },
+        { name: "Magenta", value: "magenta" },
+        { name: "Lime", value: "lime" },
+        { name: "Teal", value: "teal" },
+        { name: "Brown", value: "brown" },
+        { name: "Gray", value: "gray" },
+        { name: "Silver", value: "silver" },
+        { name: "Gold", value: "gold" },
+        { name: "Navy", value: "navy" },
+        { name: "Maroon", value: "maroon" },
+        { name: "Olive", value: "olive" },
+        { name: "Dark Blue", value: "#00008B" },
+        { name: "Sky Blue", value: "#87CEEB" },
+        { name: "Crimson", value: "#DC143C" },
+        { name: "Forest Green", value: "#228B22" },
+        { name: "Violet", value: "#8A2BE2" },
+        { name: "Turquoise", value: "#40E0D0" },
+        { name: "Salmon", value: "#FA8072" },
+        { name: "Dark Orchid", value: "#9932CC" },
+        { name: "Khaki", value: "#F0E68C" },
+        { name: "Indigo", value: "#4B0082" },
+        { name: "Aquamarine", value: "#7FFFD4" },
+        { name: "Chocolate", value: "#D2691E" }
+
+    ];
+
+    var colorContainer = document.getElementById("color-container");
+    colors.forEach(function(color) {
+        var colorOption = document.createElement("div");
+        colorOption.className = "color-option";
+        colorOption.style.backgroundColor = color.value;
+        colorOption.onclick = function() {
+            selectColor(color.value);
+        };
+        colorContainer.appendChild(colorOption);
+    });
+
+function openPopup() {
+    document.getElementById("popup").style.display = "block";
+}
+
+function waitForPopupClose(callback) {
+    var interval = setInterval(function() {
+        if (document.getElementById("popup").style.display === "none") {
+            clearInterval(interval);
+            callback();
+        }
+    }, 100); 
+}
+
+// Refresh website 
+window.onload = function() {
+    if (!document.cookie) {
+        openPopup();
+
+        // Wait until pop up was closed 
+        waitForPopupClose(function() {
+            username = document.getElementById("name").value;
+            color = selectedColor;
+
+            document.cookie = "user="+ username +" color="+ color +" expires=Tue, 19 Jan 2038 03:14:07 GMT";
+            updateNames(username, color);
+
+            const data = {
+            username: username,
+            color: color, 
+            index_list : []
+            };
+
+            // POST-Anfrage an den Flask-Endpunkt senden
+            fetch('/updateJSON', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(" ");
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+            
+    } else {
+
+        index_list = updateNames(getCookie('user'), getCookie('color'));
+
+        var username = getCookie('user');
+        var color = getCookie('color'); 
+
+        document.getElementById("colorField").value = color;
+        document.getElementById("sender").value = username;
+
+        const data = {
+            username: username,
+            color: color, 
+            index_list : index_list
+        };
+
+            // POST-Anfrage an den Flask-Endpunkt senden
+            fetch('./updateJSON', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(" ");
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+};
+
+function getCookie(attributeName) {
+  console.log(document.cookie);
+  const cookies = document.cookie.split(' ');
+  for (let cookie of cookies) {
+    cookie = cookie.trim();
+    if (cookie.startsWith(attributeName + '=')) {
+      const value = cookie.slice(attributeName.length + 1);
+      return decodeURIComponent(value);
+    }
+  }
+
+  // If the attribute was not found, return undefined
+  return undefined;
+}
+
+// For cookie in cookies? die namen anpassen die vom jeweiligen cookie kommen oder so geht das? 
+function updateNames(name, color) {
+    var senderElements = document.getElementsByClassName('sender')
+
+    // liste extrahieren für einen user welche nachrichten von ihm sind?
+    for (var i = 0; i < senderElements.length; i++) {
+        var user = senderElements[i].innerText;     
+        var index_list = [];
+
+        if(!user || user == "" || user == " "){
+            senderElements[i].innerText = name;
+
+            if(selectedColor == " "){
+                senderElements[i].style.color = selectedColor;
+            } else{
+                senderElements[i].style.color = color;
+            }
+            index_list.push(i)
+        }
+    } 
+    return index_list 
+}
+
+//Popup-Fenster schließen
+function closePopup() {
+    document.getElementById("popup").style.display = "none";
+    if (typeof callback === "function") {
+        callback();
+    }
+}
+
+</script>
+</body>
+</html>
+

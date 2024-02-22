@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color and Name Preference</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: rgba(0, 0, 0, 0.5);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .popup {
+            width: 300px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-right: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        #color-container {
+            margin-top: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="popup">
+    <h1> Choose a name and a color for the channel!</h1>
+    <div class="form-group">
+        <label for="name">Your Name:</label>
+        <input type="text" id="name" placeholder="Enter your name", name="name">
+    </div>
+    <div class="form-group">
+        <label>Choose your favorite color:</label>
+        <div id="color-container">
+            <!-- Color options will be dynamically generated here -->
+        </div>
+    </div>
+    <form action="post" method="post" onsubmit="return submitForm()">
+        <input type="text" name="name" id="name">
+        <input type="text" name="color" id="color" style="display: none;"> <!-- Verstecktes Feld für die Farbe -->
+        <input type="submit" value="Post">
+    </form>
+</div>
+
+
+
+<script>
+    function submitForm() {
+        var name = document.getElementById("name").value;
+        var color = selectedColor;
+        //alert("Thank you, " + name + "! Your favorite color preference is " + colorPreference + ".");
+        // Hier können Sie den Code einfügen, um die Daten zu speichern oder weiter zu verarbeiten
+        return name, color
+    }
+
+    var selectedColor = ""; // Globale Variable zur Speicherung der ausgewählten Farbe
+
+    function selectColor(color) {
+        selectedColor = color;
+        var colorOptions = document.getElementsByClassName("color-option");
+        for (var i = 0; i < colorOptions.length; i++) {
+            colorOptions[i].style.filter = "brightness(100%)"; // Setze die Helligkeit aller Farboptionen zurück
+        }
+        event.target.style.filter = "brightness(80%)"; // Reduziere die Helligkeit der ausgewählten Farbe auf 80%
+    }
+
+    // Farbenliste
+    var colors = [
+        { name: "Blue", value: "blue" },
+        { name: "Red", value: "red" },
+        { name: "Green", value: "green" },
+        { name: "Yellow", value: "yellow" },
+        { name: "Orange", value: "orange" },
+        { name: "Purple", value: "purple" },
+        { name: "Pink", value: "pink" },
+        { name: "Cyan", value: "cyan" },
+        { name: "Magenta", value: "magenta" },
+        { name: "Lime", value: "lime" },
+        { name: "Teal", value: "teal" },
+        { name: "Brown", value: "brown" },
+        { name: "Gray", value: "gray" },
+        { name: "Silver", value: "silver" },
+        { name: "Gold", value: "gold" },
+        { name: "Navy", value: "navy" },
+        { name: "Maroon", value: "maroon" },
+        { name: "Olive", value: "olive" },
+        { name: "Dark Blue", value: "#00008B" },
+        { name: "Sky Blue", value: "#87CEEB" },
+        { name: "Crimson", value: "#DC143C" },
+        { name: "Forest Green", value: "#228B22" },
+        { name: "Violet", value: "#8A2BE2" },
+        { name: "Turquoise", value: "#40E0D0" },
+        { name: "Salmon", value: "#FA8072" },
+        { name: "Dark Orchid", value: "#9932CC" },
+        { name: "Khaki", value: "#F0E68C" },
+        { name: "Indigo", value: "#4B0082" },
+        { name: "Aquamarine", value: "#7FFFD4" },
+        { name: "Chocolate", value: "#D2691E" }
+
+    ];
+
+    var colorContainer = document.getElementById("color-container");
+    colors.forEach(function(color) {
+        var colorOption = document.createElement("div");
+        colorOption.className = "color-option";
+        colorOption.style.backgroundColor = color.value;
+        colorOption.onclick = function() {
+            selectColor(color.value);
+        };
+        colorContainer.appendChild(colorOption);
+    });
+</script>
+
+</body>
+</html>
