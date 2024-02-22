@@ -1,3 +1,6 @@
 flask
 flask-sqlalchemy
 requests
+pygame 
+nltk 
+numpy
