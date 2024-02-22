@@ -132,9 +132,14 @@
             <div class="messages">
                 {% for message in messages %}
                     <div class="message">
-                        {% set color = "color: " + message.color %}
-                        <p class="sender" value="User" style="color: {{ message.color }}" >{{ message.sender }}</p>
-                        <p>{{ message.content }}</p>
+                        {% if 'color' in message %}
+                            {% set color = "color: " + message.color %}
+                        {% else %}
+                            {% set color = "color:blue" %}
+                        {% endif %}
+                        
+                        <p class="sender" value="User" style="{{ color }};" >{{ message.sender }}</p>
+                        <p style="white-space: pre-wrap">{{ message.content }}</p>
                         <p class="timestamp">{{ message.timestamp }}</p>
                     </div>
                 {% endfor %}

@@ -52,18 +52,13 @@ def show_channel():
     if response.status_code != 200:
         return "Error fetching messages: "+str(response.text), 400
     messages = response.json()
-    print(messages)
 
     return render_template("channel_t.html", channel=channel, messages=messages)
 
 # update messages JSON file for all users 
 @app.route('/updateJSON', methods=['POST'])
 def updateJSON(): 
-    print("I'M UPDATING THE JSON FILE NOW")
     data = request.get_json()
-    print(data)
-    # oder in database eintragen? anstatt in JSON?
-    # data {'username': 'Ligollas', 'color': '#FA8072', 'index_list': [1]}
 
     username = data['username']
     color = data['color']
@@ -76,7 +71,6 @@ def updateJSON():
 
 @app.route('/post', methods=['POST'])
 def post_message():
-    print("CLIENT POST")
     # send message to channel
     post_channel = request.form['channel']
     if not post_channel:
@@ -90,7 +84,6 @@ def post_message():
         return "Channel not found", 404
     message_content = request.form['content']
     message_sender = request.form['sender']
-    print("RRRRRRRRREEEEEEEEEEEEEQQQQQQQQQUUUUUUUUUUUEST.FORM", request.form)
     message_color = request.form['color']
     message_timestamp = datetime.datetime.now().isoformat()
     response = requests.post(channel['endpoint'],

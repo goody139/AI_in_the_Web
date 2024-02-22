@@ -23,10 +23,15 @@ class Hangman:
     def update_values(self, guessed_letter, state):  
         if state == -1: 
             return -1
-        if state == 1 and not(guessed_letter == self.word) :
+        if state == 1 and all(letter in guessed_letter for letter in self.word):
+            self.guessed_letters += guessed_letter
+            return 0
+        elif state == 1 and not(guessed_letter == self.word) :
             self.guessed_letters.append(''.join(guessed_letter))
             self.attempts -= 1
             return 1 
+        
+        
             
         for g in guessed_letter: self.guessed_letters.append(g)
         self.masked_word = "".join("_ " if letter not in self.guessed_letters else letter for letter in self.word)        

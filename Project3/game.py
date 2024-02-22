@@ -14,7 +14,7 @@ class ArgumentParser(argparse.ArgumentParser):
         raise ValueError(message)
     
     def print_help(this):
-        super.print(help)
+        super(ArgumentParser, this).print_help()
 
 
 class TicTacToeGame():
