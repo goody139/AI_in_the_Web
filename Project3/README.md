@@ -3,7 +3,7 @@ Tobias Thelen
 University Osnabrück
 Winter term 2023 
 
-## Project 2: Build a movie Recommender system 
+## Project 3: Web services
 This repository is meant to provide our solution for project 3. 
 The project is deployed on one of the servers provided for the course and reachable [through this link from within the university network](INSERT YOUR LINK HERE)
 
