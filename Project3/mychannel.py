@@ -97,32 +97,11 @@ def send_message():
     bot_message(message, messages)
     save_messages(messages)
     return "OK", 200
-
-def bot_message_1(message, messages):
-    # respond to messages
-    BOT_NAME = "Welcome_Bot"
-    content = "Hello {}".format(message['sender'])
-    messages.append({'content':content, 'sender':BOT_NAME, 'timestamp':datetime.datetime.now().isoformat()})
-    save_messages(messages)
-    return messages
-
-
-
          
 def bot_message(message, messages):
     # respond to messages
     # tic-tac-toe
-    # [TODO] commands: start new game, 
-    #    game options: - symbol of first player / starting player
-    #                  - 1 or two player game
-    #                  - easy/hard mode (bot playing optimal strategy)
-    
-    
-
-    # by default, bot has x symbol and player starts
-
     if message['content'].startswith("/ttt"):
-        print("parsing message for ttt bot")
         c=""
         if "-h" in message['content'] or "--help" in message['content']:
             c += ttt_game.print_help()

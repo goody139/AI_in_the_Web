@@ -68,19 +68,15 @@ class TicTacToeGame():
         for i,v in enumerate(this.game_state[row]):
             if v==symbol:
                 n_symbol+=1
-            # print("row i v", i, v)
             if v != '' and v != symbol:
-                # print("different symbol")
                 is_draw = True
             elif v != '' and i != column:
-                    # print("i", i, "column", column, "v", v)
                     is_new_draw = False
 
             if n_symbol == this.size:
                 return 1
 
         if is_draw and is_new_draw:
-            # print("increaing draws")
             this.slots_with_draws +=1
         if this.slots_with_draws == this.size*2+2:
             return 0
@@ -92,12 +88,9 @@ class TicTacToeGame():
         for i,v in enumerate(this.game_state[:, column]):
             if v==symbol:
                 n_symbol+=1
-            # print("column i v", i, v)
             if v != '' and v != symbol:
-                # print("different symbol")
                 is_draw = True
             elif v != '' and i != row:
-                    # print("i", i, "row", row, "v", v)
                     is_new_draw = False
 
             if n_symbol == this.size:
@@ -117,12 +110,9 @@ class TicTacToeGame():
             for i,v in enumerate(this.game_state[np.arange(this.size), np.arange(this.size)]):
                 if v==symbol:
                     n_symbol+=1
-                # print("1st diagonal i, v", i, v)
                 if v != '' and v != symbol:
-                    # print("different symbol")
                     is_draw = True
                 elif v != '' and i != row:
-                        # print("i", i, "r", row, "v", v)
                         is_new_draw = False
 
                 if n_symbol == this.size:
@@ -140,12 +130,9 @@ class TicTacToeGame():
             for i,v in enumerate(this.game_state[np.arange(this.size), np.arange(this.size)[::-1]]):
                 if v==symbol:
                     n_symbol+=1
-                # print("2nd diagonal i, v", i, v)
                 if v != '' and v != symbol:
-                    # print("different symbol")
                     is_draw = True
                 elif v != '' and i != row:
-                        # print("i", i, "r", row, "v", v)
                         is_new_draw = False
 
                 if n_symbol == this.size:
@@ -207,30 +194,20 @@ class TicTacToeGame():
             # perform current move and check whether this is a terminal state, if so, return the value of the state
 
             t = this.create_copy()
-            # print("\n\nminimax, current game, move to check, maximising player,, d", maximizing_player, t, depth)
-            # print(t.get_printed_game_state(), move, t.next_symbol, t.number_of_moves_made, t.slots_with_draws)
-            # print("current player, next symbol", current_player, t.next_symbol)
             game_state_copy = t.place_at_location(move, current_player)
             value = t.check_for_termination(move, current_player)
             t.next_symbol = "x" if t.next_symbol=="o" else "o"
 
             if value > 0:
-                # print("terminates with win,win for maximisign player", current_player==maximizing_player)
                 return 10-depth if current_player==maximizing_player else -20+depth
             if value == 0:
-                # print("terminates with draw")
                 return 0-depth
 
             else:
-                #print(value, t.number_of_moves_made, t.slots_with_draws)
-                
                 # otherwise, continue playing
-
                 # get possible moves
                 possible_moves = np.argwhere(game_state_copy=='')
-                # print("looking at posible moves", possible_moves)
                 
-
                 if t.next_symbol == maximizing_player:
                     best_value = -np.inf
                     for move in possible_moves:
@@ -253,7 +230,6 @@ class TicTacToeGame():
         best_value = -np.inf
         for move in possible_moves:
             state_value = this.minimax(move, 0, symbol, symbol)
-            print("move", move, "value", state_value)
             best_value = max(best_value, state_value)
             if best_value == state_value:
                 best_move = move
@@ -261,7 +237,6 @@ class TicTacToeGame():
      
       
     def parse_message(this, message, user):
-        print("message", message)
         parser = ArgumentParser(description='Tic-tac-toe chat bot.')
         parser.add_argument('c1', type=int)
         parser.add_argument('c2', type=int)
@@ -271,7 +246,6 @@ class TicTacToeGame():
         parser.add_argument('-u', action='store_true', help='Flag to make the game user-bound, so that only messages from the starting user(s) advance the game.')
 
         args = parser.parse_args(message.split())
-        print(args)
 
         if args.new_game:
             this.reset_game()
@@ -293,7 +267,6 @@ class TicTacToeGame():
 
 
         if this.user_bound:
-            print("user bound")
             if this.bot_player and len(this.bound_users) < 1 or not this.bot_player and len(this.bound_users) <2:
                 #add user to bound users
                 this.bound_users.append(user)
@@ -323,7 +296,6 @@ class TicTacToeGame():
                     move = this.get_best_next_move(this.game_state, this.next_symbol)
                     this.place_at_location(move, this.next_symbol)
                     v = this.check_for_termination(move, this.next_symbol)
-                    print("v", v)
                     if v == 0:
                         m = "Draw"
                     elif v == 1:
@@ -340,9 +312,6 @@ class TicTacToeGame():
                         m = this.next_symbol + " wins"
                     this.next_symbol = "x" if this.next_symbol=="o" else "o"
         
-
-
-        print("v", v)
 
         return this.get_printed_game_state() + "\n" +m
         
