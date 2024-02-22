@@ -6,8 +6,8 @@ from channel import update_messages
 
 app = Flask(__name__)
 
-HUB_AUTHKEY = '1234567890'
-HUB_URL = 'http://localhost:5555'
+HUB_AUTHKEY = 'Crr-K3d-2N'
+HUB_URL = 'http://temporary-server.de'
 
 CHANNELS = None
 LAST_CHANNEL_UPDATE = None
